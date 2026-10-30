@@ -306,7 +306,7 @@ export async function generateWorkout(storeState) {
 
   const workoutPlan = {
     id: `plan_${Date.now()}`,
-    programName: `${cycleLengthWeeks}-Week Fig ${primaryGoal} Blueprint`,
+    programName: `${cycleLengthWeeks}-Week ${primaryGoal} Blueprint`,
     warmupRoutine: {
       cardioPrimer: '5-7 minutes light dynamic cardio (treadmill incline walk, assault bike, or jump rope) to raise core body temp.',
       dynamicMobility: [

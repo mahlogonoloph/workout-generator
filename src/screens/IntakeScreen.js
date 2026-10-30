@@ -297,7 +297,7 @@ export default function IntakeScreen({ navigation }) {
           activeOpacity={0.85}
           onPress={handleGenerate}
         >
-          <Text style={styles.primaryButtonText}>Generate Fig Routine</Text>
+          <Text style={styles.primaryButtonText}>Generate Routine</Text>
           <Text style={styles.buttonArrow}>→</Text>
         </TouchableOpacity>
       </View>

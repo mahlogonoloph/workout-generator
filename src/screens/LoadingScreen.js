@@ -17,7 +17,7 @@ const GENERATION_STAGES = [
   'Applying joint safety & recovery constraints...',
   'Balancing primary compounds & accessories...',
   'Calibrating progressive overload & rest periods...',
-  'Finalizing your personalized Fig routine...',
+  'Finalizing your personalized routine...',
 ];
 
 export default function LoadingScreen({ navigation }) {

@@ -6,21 +6,25 @@ import {
   StyleSheet,
   ScrollView,
   StatusBar,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../theme/colors';
 import useWorkoutStore from '../store/useWorkoutStore';
+import { downloadWorkoutPdf } from '../utils/generateWorkoutPdf';
 
 export default function RoutineScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const generatedRoutine = useWorkoutStore((state) => state.generatedRoutine);
   const logistics = useWorkoutStore((state) => state.logistics);
   const userProfile = useWorkoutStore((state) => state.userProfile);
+  const targeting = useWorkoutStore((state) => state.targeting);
 
   // Fallback data if store hasn't generated yet
   const routine = generatedRoutine || {
     id: 'demo-plan',
-    programName: '8-Week Fig Hypertrophy Blueprint',
+    programName: '8-Week Hypertrophy Blueprint',
     warmupRoutine: {
       cardioPrimer: '5-7 minutes light dynamic cardio (treadmill walk or bike) to raise core body temp.',
       dynamicMobility: [
@@ -66,6 +70,27 @@ export default function RoutineScreen({ navigation }) {
   const schedule = routine.schedule || [];
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const [isWarmupExpanded, setIsWarmupExpanded] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloading(true);
+      await downloadWorkoutPdf({
+        routine,
+        userProfile,
+        logistics,
+        targeting,
+      });
+    } catch (error) {
+      console.error('Failed to generate or download workout PDF:', error);
+      Alert.alert(
+        'Download Error',
+        'Unable to generate your workout program PDF. Please try again.'
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const activeDay = schedule[activeDayIndex] || schedule[0] || {
     dayNumber: 1,
@@ -236,11 +261,25 @@ export default function RoutineScreen({ navigation }) {
       {/* Floating Bottom Action Bar */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         <TouchableOpacity
-          style={styles.primaryButton}
+          style={[styles.primaryButton, isDownloading && styles.primaryButtonDisabled]}
           activeOpacity={0.85}
-          onPress={() => alert(`Starting ${activeDay.dayLabel}!`)}
+          disabled={isDownloading}
+          onPress={handleDownloadPdf}
         >
-          <Text style={styles.primaryButtonText}>Start Workout</Text>
+          {isDownloading ? (
+            <View style={styles.buttonContentRow}>
+              <ActivityIndicator size="small" color={Colors.textPrimary} />
+              <Text style={styles.primaryButtonText}>Generating PDF...</Text>
+            </View>
+          ) : (
+            <View style={styles.buttonContentRow}>
+              <Text style={styles.downloadIcon}>↓</Text>
+              <Text style={styles.primaryButtonText}>Download Program</Text>
+              <View style={styles.pdfBadge}>
+                <Text style={styles.pdfBadgeText}>PDF</Text>
+              </View>
+            </View>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -550,6 +589,34 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 10,
     elevation: 5,
+  },
+  primaryButtonDisabled: {
+    opacity: 0.65,
+  },
+  buttonContentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  downloadIcon: {
+    color: Colors.textPrimary,
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: -2,
+  },
+  pdfBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginLeft: 2,
+  },
+  pdfBadgeText: {
+    color: Colors.textPrimary,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.6,
   },
   primaryButtonText: {
     color: Colors.textPrimary,
