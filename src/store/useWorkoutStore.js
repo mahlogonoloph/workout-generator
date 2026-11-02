@@ -1,17 +1,12 @@
 import { create } from 'zustand';
-import { generateWorkout as apiGenerateWorkout } from '../api/generationClient.js';
+import {
+  generateWorkout as apiGenerateWorkout,
+  findReplacementExercise,
+  getPrescription,
+} from '../api/generationClient.js';
 
 /**
- * 1. Global Store Schema (Zustand)
- *
- * interface WorkoutStore {
- *   userProfile: { gender: string; primaryGoal: string; cycleLengthWeeks: number };
- *   logistics: { location: string; frequencyDays: number; durationMinutes: number };
- *   targeting: { focusAreas: string[]; exclusionZones: string[] };
- *   isGenerating: boolean;
- *   generatedRoutine: WorkoutPlan | null;
- *   error: string | null;
- * }
+ * Global Store Schema (Zustand) with Biomechanical Taxonomy & User Feedback Loop
  */
 
 const initialProfile = {
@@ -31,11 +26,19 @@ const initialTargeting = {
   exclusionZones: [],
 };
 
+const initialFeedback = {
+  likedExerciseIds: [],
+  dislikedExerciseIds: [],
+  swapHistory: [], // Array of { fromName, toName, reason, timestamp }
+  intensityRating: 'optimal', // 'too_easy' | 'optimal' | 'too_hard'
+  preferSimplerMovements: false,
+};
+
 export const useWorkoutStore = create((set, get) => ({
-  // Exact Store Schema State
   userProfile: { ...initialProfile },
   logistics: { ...initialLogistics },
   targeting: { ...initialTargeting },
+  feedback: { ...initialFeedback },
   isGenerating: false,
   generatedRoutine: null,
   error: null,
@@ -46,7 +49,6 @@ export const useWorkoutStore = create((set, get) => ({
       userProfile: { ...state.userProfile, ...updates },
     })),
 
-  // Alias for updateProfile
   updateProfile: (updates) =>
     set((state) => ({
       userProfile: { ...state.userProfile, ...updates },
@@ -83,7 +85,6 @@ export const useWorkoutStore = create((set, get) => ({
       userProfile: { ...state.userProfile, primaryGoal },
     })),
 
-  // Backwards compatibility alias for goal
   setGoal: (goal) =>
     set((state) => ({
       userProfile: { ...state.userProfile, primaryGoal: goal },
@@ -113,7 +114,6 @@ export const useWorkoutStore = create((set, get) => ({
       logistics: { ...state.logistics, frequencyDays: Number(frequencyDays) || 3 },
     })),
 
-  // Backwards compatibility alias for frequency
   setFrequency: (frequency) => {
     const daysMatch = String(frequency).match(/\d+/);
     const days = daysMatch ? parseInt(daysMatch[0], 10) : 3;
@@ -127,7 +127,6 @@ export const useWorkoutStore = create((set, get) => ({
       logistics: { ...state.logistics, durationMinutes: Number(durationMinutes) || 60 },
     })),
 
-  // Backwards compatibility alias for duration
   setDuration: (duration) => {
     const durationMatch = String(duration).match(/\d+/);
     const mins = durationMatch ? parseInt(durationMatch[0], 10) : 60;
@@ -175,6 +174,157 @@ export const useWorkoutStore = create((set, get) => ({
       };
     }),
 
+  // =========================================================================
+  // USER FEEDBACK LOOP ACTIONS
+  // =========================================================================
+
+  /**
+   * Toggles an exercise as "Liked / Favorite" so future generations prioritize it.
+   */
+  toggleLikeExercise: (catalogId) =>
+    set((state) => {
+      if (!catalogId) return state;
+      const liked = state.feedback.likedExerciseIds || [];
+      const isLiked = liked.includes(catalogId);
+      const updatedLiked = isLiked
+        ? liked.filter((id) => id !== catalogId)
+        : [...liked, catalogId];
+
+      // Also ensure it is removed from disliked if liked
+      const updatedDisliked = (state.feedback.dislikedExerciseIds || []).filter(
+        (id) => id !== catalogId
+      );
+
+      return {
+        feedback: {
+          ...state.feedback,
+          likedExerciseIds: updatedLiked,
+          dislikedExerciseIds: updatedDisliked,
+        },
+      };
+    }),
+
+  /**
+   * Swaps an exercise on the active routine and updates the user feedback model
+   * based on the user's stated reason ('equipment_busy', 'joint_pain', 'too_hard', 'dislike').
+   */
+  swapExerciseWithFeedback: ({ dayIndex, exerciseIndex, reason = 'dislike' }) =>
+    set((state) => {
+      const routine = state.generatedRoutine;
+      if (!routine || !routine.schedule || !routine.schedule[dayIndex]) {
+        return state;
+      }
+
+      const day = routine.schedule[dayIndex];
+      const currentEx = day.exercises[exerciseIndex];
+      if (!currentEx) return state;
+
+      const existingDayCatalogIds = day.exercises.map((e) => e.catalogId || e.id);
+      const replacement = findReplacementExercise({
+        currentExercise: currentEx,
+        storeState: state,
+        existingDayCatalogIds,
+        reason,
+      });
+
+      // Update feedback memory depending on reason
+      const shouldBanPermanently =
+        reason === 'dislike' || reason === 'joint_pain' || reason === 'too_hard';
+      const currentDisliked = state.feedback.dislikedExerciseIds || [];
+      const targetCatalogId = currentEx.catalogId || currentEx.id;
+
+      const updatedDisliked =
+        shouldBanPermanently && !currentDisliked.includes(targetCatalogId)
+          ? [...currentDisliked, targetCatalogId]
+          : currentDisliked;
+
+      const updatedLiked = (state.feedback.likedExerciseIds || []).filter(
+        (id) => id !== targetCatalogId
+      );
+
+      const newSwapEntry = {
+        fromId: targetCatalogId,
+        fromName: currentEx.name,
+        toId: replacement.catalogId,
+        toName: replacement.name,
+        reason,
+        timestamp: Date.now(),
+      };
+
+      const updatedExercises = [...day.exercises];
+      updatedExercises[exerciseIndex] = {
+        ...replacement,
+        id: `ex-${day.dayNumber}-${exerciseIndex + 1}-${replacement.catalogId}`,
+        swappedFrom: currentEx.name,
+        swapReason: reason,
+      };
+
+      const updatedSchedule = [...routine.schedule];
+      updatedSchedule[dayIndex] = {
+        ...day,
+        exercises: updatedExercises,
+      };
+
+      return {
+        feedback: {
+          ...state.feedback,
+          likedExerciseIds: updatedLiked,
+          dislikedExerciseIds: updatedDisliked,
+          preferSimplerMovements:
+            reason === 'too_hard' ? true : state.feedback.preferSimplerMovements,
+          swapHistory: [newSwapEntry, ...(state.feedback.swapHistory || []).slice(0, 19)],
+        },
+        generatedRoutine: {
+          ...routine,
+          schedule: updatedSchedule,
+        },
+      };
+    }),
+
+  /**
+   * Calibrates program intensity/volume ('too_easy', 'optimal', 'too_hard')
+   * and immediately updates sets & rest times on the active routine.
+   */
+  setIntensityRating: (intensityRating) =>
+    set((state) => {
+      const primaryGoal = state.userProfile.primaryGoal || 'Hypertrophy / Muscle';
+      const routine = state.generatedRoutine;
+
+      let updatedRoutine = routine;
+      if (routine && Array.isArray(routine.schedule)) {
+        const updatedSchedule = routine.schedule.map((day) => ({
+          ...day,
+          exercises: (day.exercises || []).map((ex) => {
+            const nextPrescription = getPrescription(
+              primaryGoal,
+              ex.tier || 'compound',
+              intensityRating
+            );
+            return {
+              ...ex,
+              sets: nextPrescription.sets,
+              reps: nextPrescription.reps,
+              restSeconds: nextPrescription.restSeconds,
+            };
+          }),
+        }));
+        updatedRoutine = { ...routine, schedule: updatedSchedule };
+      }
+
+      return {
+        feedback: {
+          ...state.feedback,
+          intensityRating,
+        },
+        generatedRoutine: updatedRoutine,
+      };
+    }),
+
+  resetFeedback: () =>
+    set({
+      feedback: { ...initialFeedback },
+    }),
+
   // Status & Routine Setters
   setIsGenerating: (isGenerating) => set({ isGenerating }),
   setError: (error) => set({ error }),
@@ -186,6 +336,7 @@ export const useWorkoutStore = create((set, get) => ({
       userProfile: { ...initialProfile },
       logistics: { ...initialLogistics },
       targeting: { ...initialTargeting },
+      feedback: { ...initialFeedback },
       isGenerating: false,
       generatedRoutine: null,
       error: null,

@@ -48,6 +48,16 @@ const JOINT_SAFETY_OPTIONS = [
   'Elbows',
 ];
 
+const FOCUS_MUSCLE_OPTIONS = [
+  'Chest',
+  'Back',
+  'Shoulders',
+  'Legs',
+  'Glutes',
+  'Arms',
+  'Core',
+];
+
 export default function IntakeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
 
@@ -55,17 +65,25 @@ export default function IntakeScreen({ navigation }) {
   const userProfile = useWorkoutStore((state) => state.userProfile);
   const logistics = useWorkoutStore((state) => state.logistics);
   const targeting = useWorkoutStore((state) => state.targeting);
+  const feedback = useWorkoutStore((state) => state.feedback);
   const setPrimaryGoal = useWorkoutStore((state) => state.setPrimaryGoal);
   const setLocation = useWorkoutStore((state) => state.setLocation);
   const setFrequencyDays = useWorkoutStore((state) => state.setFrequencyDays);
   const setDurationMinutes = useWorkoutStore((state) => state.setDurationMinutes);
   const toggleExclusionZone = useWorkoutStore((state) => state.toggleExclusionZone);
+  const toggleFocusArea = useWorkoutStore((state) => state.toggleFocusArea);
+  const resetFeedback = useWorkoutStore((state) => state.resetFeedback);
 
   const selectedGoal = userProfile.primaryGoal || 'Hypertrophy / Muscle';
   const selectedLocation = logistics.location || 'Commercial Gym';
   const selectedFrequency = logistics.frequencyDays || 4;
   const selectedDuration = logistics.durationMinutes || 60;
   const selectedExclusions = targeting.exclusionZones || [];
+  const selectedFocusAreas = targeting.focusAreas || [];
+  const likedCount = (feedback?.likedExerciseIds || []).length;
+  const dislikedCount = (feedback?.dislikedExerciseIds || []).length;
+  const hasFeedbackMemory =
+    likedCount > 0 || dislikedCount > 0 || (feedback?.intensityRating && feedback.intensityRating !== 'optimal');
 
   const handleGenerate = () => {
     navigation.navigate('Loading');
@@ -256,7 +274,40 @@ export default function IntakeScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Section 5: Joint & Recovery Constraints */}
+        {/* Section 5: Target Muscle Group Focus (Taxonomy Priority) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Target Muscle Priority</Text>
+          <Text style={styles.sectionSubtitle}>
+            Prioritize specific muscle groups within the wger movement pattern taxonomy
+          </Text>
+          <View style={styles.jointChipsRow}>
+            {FOCUS_MUSCLE_OPTIONS.map((muscle) => {
+              const isFocused = selectedFocusAreas.includes(muscle);
+              return (
+                <TouchableOpacity
+                  key={muscle}
+                  activeOpacity={0.75}
+                  onPress={() => toggleFocusArea(muscle)}
+                  style={[
+                    styles.jointChip,
+                    isFocused ? styles.focusChipSelected : styles.jointChipSafe,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.jointChipText,
+                      isFocused ? styles.focusChipTextSelected : styles.jointChipTextSafe,
+                    ]}
+                  >
+                    {isFocused ? `★ ${muscle}` : `+ ${muscle}`}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Section 6: Joint & Recovery Constraints */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Joint Sensitivity / Exclusions</Text>
           <Text style={styles.sectionSubtitle}>
@@ -288,6 +339,23 @@ export default function IntakeScreen({ navigation }) {
             })}
           </View>
         </View>
+
+        {/* Section 7: Active Feedback Memory Banner */}
+        {hasFeedbackMemory && (
+          <View style={styles.feedbackMemoryCard}>
+            <View style={styles.feedbackMemoryHeader}>
+              <Text style={styles.feedbackMemoryTitle}>Learned User Preferences Active</Text>
+              <TouchableOpacity onPress={resetFeedback} activeOpacity={0.7}>
+                <Text style={styles.feedbackResetBtn}>Reset Memory</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.feedbackMemoryDesc}>
+              • {likedCount} Favorited movement(s) prioritized{'\n'}
+              • {dislikedCount} Disliked/Swapped movement(s) excluded{'\n'}
+              • Volume Calibration: {feedback?.intensityRating?.toUpperCase() || 'OPTIMAL'}
+            </Text>
+          </View>
+        )}
       </ScrollView>
 
       {/* Floating Bottom Action Bar */}
@@ -504,6 +572,44 @@ const styles = StyleSheet.create({
   },
   jointChipTextExcluded: {
     color: Colors.primary,
+  },
+  focusChipSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  focusChipTextSelected: {
+    color: Colors.textPrimary,
+    fontWeight: '700',
+  },
+  feedbackMemoryCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(200, 70, 99, 0.35)',
+  },
+  feedbackMemoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  feedbackMemoryTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  feedbackResetBtn: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    textDecorationLine: 'underline',
+  },
+  feedbackMemoryDesc: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    lineHeight: 18,
   },
   bottomBar: {
     position: 'absolute',

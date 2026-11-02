@@ -1,319 +1,391 @@
 /**
- * API Integration Layer: Antigravity LLM Output Generator
- * Fulfills the WorkoutPlan API Response Schema.
+ * API Integration & Biomechanical Rule Engine
+ * Powered by the wger Open-Source Exercise Taxonomy + Movement Pattern Split Engine + User Feedback Loop.
  */
+import {
+  WGER_EXERCISE_CATALOG,
+  MOVEMENT_PATTERNS,
+  MUSCLE_GROUPS,
+  SPLIT_TEMPLATES,
+} from '../data/wgerExerciseCatalog.js';
+
+export { WGER_EXERCISE_CATALOG, MOVEMENT_PATTERNS, MUSCLE_GROUPS };
 
 /**
- * Exercise database with equipment locations, target muscles, and fallback substitutions.
+ * Filters catalog exercises by environment, joint exclusions, and user-disliked exercises.
  */
-const EXERCISE_CATALOG = {
-  'Commercial Gym': [
-    {
-      name: 'Barbell Bench Press',
-      category: 'Chest',
-      substitutions: ['Dumbbell Flat Bench Press', 'Machine Chest Press', 'Weighted Dips'],
-      jointStress: ['Shoulders', 'Wrists'],
-    },
-    {
-      name: 'Incline Dumbbell Press',
-      category: 'Chest',
-      substitutions: ['Incline Barbell Bench Press', 'Low-to-High Cable Flyes', 'Smith Machine Incline Press'],
-      jointStress: ['Shoulders'],
-    },
-    {
-      name: 'Cable Chest Flyes',
-      category: 'Chest',
-      substitutions: ['Pec Deck Machine', 'Dumbbell Flyes', 'Banded Push-Ups'],
-      jointStress: [],
-    },
-    {
-      name: 'Wide-Grip Lat Pulldown',
-      category: 'Back',
-      substitutions: ['Pull-Ups', 'Assisted Chin-Up Machine', 'Single-Arm Neutral Cable Pulldown'],
-      jointStress: ['Shoulders'],
-    },
-    {
-      name: 'Barbell Bent-Over Row',
-      category: 'Back',
-      substitutions: ['Chest-Supported T-Bar Row', 'Seated Cable Row', 'One-Arm Dumbbell Row'],
-      jointStress: ['Lower Back'],
-    },
-    {
-      name: 'Seated Cable Row',
-      category: 'Back',
-      substitutions: ['Machine Row', 'Meadows Row', 'Incline Dumbbell Row'],
-      jointStress: ['Lower Back'],
-    },
-    {
-      name: 'Barbell Back Squat',
-      category: 'Legs',
-      substitutions: ['Leg Press', 'Hack Squat', 'Goblet Squat'],
-      jointStress: ['Knees', 'Lower Back'],
-    },
-    {
-      name: 'Romanian Deadlift',
-      category: 'Legs',
-      substitutions: ['Dumbbell Romanian Deadlift', 'Seated Leg Curl', 'Barbell Good Mornings'],
-      jointStress: ['Lower Back'],
-    },
-    {
-      name: 'Leg Press',
-      category: 'Legs',
-      substitutions: ['Bulgarian Split Squat', 'Smith Machine Squat', 'Walking Dumbbell Lunges'],
-      jointStress: ['Knees'],
-    },
-    {
-      name: 'Standing Overhead Barbell Press',
-      category: 'Shoulders',
-      substitutions: ['Seated Dumbbell Shoulder Press', 'Machine Overhead Press', 'Landmine Press'],
-      jointStress: ['Shoulders', 'Lower Back'],
-    },
-    {
-      name: 'Dumbbell Lateral Raise',
-      category: 'Shoulders',
-      substitutions: ['Cable Lateral Raise', 'Machine Lateral Raise', 'Resistance Band Lateral Raise'],
-      jointStress: [],
-    },
-    {
-      name: 'Face Pulls',
-      category: 'Shoulders',
-      substitutions: ['Rear Delt Fly Machine', 'Prone Incline Dumbbell Rear Fly', 'Band Pull-Aparts'],
-      jointStress: [],
-    },
-    {
-      name: 'Cable Triceps Rope Pushdown',
-      category: 'Arms',
-      substitutions: ['Straight Bar Tricep Pushdown', 'Overhead Cable Triceps Extension', 'Skull Crushers'],
-      jointStress: ['Elbows'],
-    },
-    {
-      name: 'Incline Dumbbell Bicep Curl',
-      category: 'Arms',
-      substitutions: ['Barbell EZ-Curl', 'Standing Cable Curl', 'Hammer Curls'],
-      jointStress: ['Elbows'],
-    },
-    {
-      name: 'Hanging Leg Raise',
-      category: 'Core',
-      substitutions: ['Captain’s Chair Knee Raise', 'Cable Woodchopper', 'Ab Wheel Rollout'],
-      jointStress: ['Lower Back'],
-    },
-  ],
-  'Home Gym': [
-    {
-      name: 'Dumbbell Floor Press',
-      category: 'Chest',
-      substitutions: ['Push-Ups with Elevators', 'Dumbbell Deficit Push-Up', 'Band-Resisted Push-Ups'],
-      jointStress: ['Shoulders'],
-    },
-    {
-      name: 'One-Arm Dumbbell Row',
-      category: 'Back',
-      substitutions: ['Two-Arm Dumbbell Bent-Over Row', 'Inverted Towel Door Rows', 'Resistance Band Rows'],
-      jointStress: ['Lower Back'],
-    },
-    {
-      name: 'Goblet Squat',
-      category: 'Legs',
-      substitutions: ['Dumbbell Front Squat', 'Bulgarian Split Squat', 'Tempo Air Squats'],
-      jointStress: ['Knees'],
-    },
-    {
-      name: 'Dumbbell Romanian Deadlift',
-      category: 'Legs',
-      substitutions: ['Single-Leg Dumbbell Deadlift', 'Glute Bridge with Dumbbell', 'Slider Hamstring Curls'],
-      jointStress: ['Lower Back'],
-    },
-    {
-      name: 'Standing Dumbbell Overhead Press',
-      category: 'Shoulders',
-      substitutions: ['Half-Kneeling Single-Arm Press', 'Pike Push-Ups', 'Seated Dumbbell Press'],
-      jointStress: ['Shoulders'],
-    },
-    {
-      name: 'Dumbbell Lateral Raise',
-      category: 'Shoulders',
-      substitutions: ['Water Bottle / Light Band Lateral Raise', 'Thumbs-Up Y-Raises', 'Scaption Raise'],
-      jointStress: [],
-    },
-    {
-      name: 'Dumbbell Bicep Curl to Hammer Curl',
-      category: 'Arms',
-      substitutions: ['Resistance Band Bicep Curl', 'Isometric Towel Bicep Curl'],
-      jointStress: ['Elbows'],
-    },
-    {
-      name: 'Overhead Dumbbell Triceps Extension',
-      category: 'Arms',
-      substitutions: ['Bench/Chair Dips', 'Diamond Push-Ups', 'Floor Tricep Extensions'],
-      jointStress: ['Elbows'],
-    },
-    {
-      name: 'Dead Bug with Dumbbell Hold',
-      category: 'Core',
-      substitutions: ['Plank to Downward Dog', 'Hollow Body Hold', 'Bicycle Crunches'],
-      jointStress: [],
-    },
-  ],
-  'Bodyweight Only': [
-    {
-      name: 'Standard Push-Ups',
-      category: 'Chest',
-      substitutions: ['Knee Push-Ups', 'Incline Push-Ups', 'Decline Push-Ups'],
-      jointStress: ['Wrists', 'Shoulders'],
-    },
-    {
-      name: 'Inverted Rows (or Doorframe Rows)',
-      category: 'Back',
-      substitutions: ['Towel Doorframe Rows', 'Prone Back Extensions', 'Scapular Pull-Ups'],
-      jointStress: ['Elbows'],
-    },
-    {
-      name: 'Bodyweight Air Squats',
-      category: 'Legs',
-      substitutions: ['Assisted Box Squats', '1.5 Rep Tempo Squats', 'Wall Sit'],
-      jointStress: ['Knees'],
-    },
-    {
-      name: 'Walking Forward Lunges',
-      category: 'Legs',
-      substitutions: ['Reverse Lunges', 'Step-Ups on Sturdy Chair', 'Glute Bridges'],
-      jointStress: ['Knees'],
-    },
-    {
-      name: 'Pike Push-Ups',
-      category: 'Shoulders',
-      substitutions: ['Elevated Feet Pike Push-Ups', 'Handstand Wall Hold', 'Bear Crawl Holds'],
-      jointStress: ['Shoulders', 'Wrists'],
-    },
-    {
-      name: 'Tricep Bench Dips',
-      category: 'Arms',
-      substitutions: ['Diamond Push-Ups', 'Close-Grip Push-Ups', 'Plank Press-Ups'],
-      jointStress: ['Shoulders'],
-    },
-    {
-      name: 'Hollow Body Hold',
-      category: 'Core',
-      substitutions: ['Dead Bug', 'Forearm Plank', 'Bird-Dog Hold'],
-      jointStress: [],
-    },
-    {
-      name: 'Side Plank Hip Lifts',
-      category: 'Core',
-      substitutions: ['Static Side Plank', 'Russian Twists', 'Bicycle Crunches'],
-      jointStress: ['Shoulders'],
-    },
-  ],
-};
+export function filterCandidateExercises({
+  location = 'Commercial Gym',
+  exclusionZones = [],
+  dislikedExerciseIds = [],
+}) {
+  const normalizedExclusions = (exclusionZones || []).map((z) => z.toLowerCase());
+  const dislikedSet = new Set(dislikedExerciseIds || []);
 
-function filterSafeExercises(pool, exclusionZones) {
-  if (!exclusionZones || exclusionZones.length === 0) return pool;
-  const normalized = exclusionZones.map((z) => z.toLowerCase());
+  // 1. Filter by environment/location
+  const locationPool = WGER_EXERCISE_CATALOG.filter((ex) =>
+    (ex.locations || []).includes(location)
+  );
 
-  return pool.filter((item) => {
+  const poolToFilter = locationPool.length > 0 ? locationPool : WGER_EXERCISE_CATALOG;
+
+  // 2. Filter out joint stress exclusions & user-disliked exercises
+  const safePool = poolToFilter.filter((item) => {
+    if (dislikedSet.has(item.id) || dislikedSet.has(item.name)) {
+      return false;
+    }
     const stresses = (item.jointStress || []).map((s) => s.toLowerCase());
-    return !stresses.some((stress) => normalized.includes(stress));
+    return !stresses.some((stress) => normalizedExclusions.includes(stress));
   });
-}
 
-function getPrescription(primaryGoal) {
-  const normalized = (primaryGoal || '').toLowerCase();
-  if (normalized.includes('strength') || normalized.includes('power')) {
-    return { sets: 4, reps: '4-6', restSeconds: 150 };
-  }
-  if (normalized.includes('fat_loss') || normalized.includes('tone') || normalized.includes('weight')) {
-    return { sets: 3, reps: '12-15', restSeconds: 60 };
-  }
-  if (normalized.includes('endurance') || normalized.includes('stamina')) {
-    return { sets: 3, reps: '15-20', restSeconds: 45 };
-  }
-  // Default to Hypertrophy
-  return { sets: 4, reps: '8-12', restSeconds: 90 };
+  // Fallback to location pool if strict filtering left 0 exercises
+  return safePool.length > 0 ? safePool : poolToFilter;
 }
 
 /**
- * Generates an LLM workout plan complying with WorkoutPlan schema:
- *
- * interface WorkoutPlan {
- *   id: string;
- *   programName: string;
- *   warmupRoutine: {
- *     cardioPrimer: string;
- *     dynamicMobility: string[];
- *   };
- *   schedule: WorkoutDay[];
- * }
+ * Calculates sets, reps, and rest intervals based on goal, exercise tier, and user intensity feedback.
+ */
+export function getPrescription(primaryGoal, tier = 'compound', intensityRating = 'optimal') {
+  const normalized = (primaryGoal || '').toLowerCase();
+  let baseSets = 3;
+  let reps = '8-12';
+  let restSeconds = 90;
+
+  if (normalized.includes('strength') || normalized.includes('power')) {
+    baseSets = tier === 'compound' ? 4 : 3;
+    reps = tier === 'compound' ? '4-6' : '8-10';
+    restSeconds = tier === 'compound' ? 150 : 90;
+  } else if (normalized.includes('fat') || normalized.includes('tone') || normalized.includes('weight')) {
+    baseSets = 3;
+    reps = '12-15';
+    restSeconds = 60;
+  } else if (normalized.includes('endurance') || normalized.includes('stamina')) {
+    baseSets = 3;
+    reps = '15-20';
+    restSeconds = 45;
+  } else if (normalized.includes('longevity') || normalized.includes('mobility')) {
+    baseSets = 3;
+    reps = '10-12';
+    restSeconds = 75;
+  } else {
+    // Hypertrophy / Muscle Default
+    baseSets = tier === 'compound' ? 4 : 3;
+    reps = tier === 'compound' ? '6-10' : '10-15';
+    restSeconds = tier === 'compound' ? 105 : 75;
+  }
+
+  // Apply Feedback Loop Intensity Calibration
+  if (intensityRating === 'too_easy') {
+    baseSets += 1;
+    restSeconds = Math.max(45, restSeconds - 15);
+  } else if (intensityRating === 'too_hard') {
+    baseSets = Math.max(2, baseSets - 1);
+    restSeconds += 20;
+  }
+
+  return { sets: baseSets, reps, restSeconds };
+}
+
+/**
+ * Formats muscle keys into human-readable anatomical labels.
+ */
+export function formatMuscleLabels(primary = [], secondary = []) {
+  const primaryLabels = primary.map((m) => MUSCLE_GROUPS[m]?.label || m);
+  const secondaryLabels = secondary.map((m) => MUSCLE_GROUPS[m]?.label || m);
+  return { primaryLabels, secondaryLabels };
+}
+
+/**
+ * Hydrates a catalog exercise entry into a scheduled workout exercise object.
+ */
+export function hydrateExerciseForSchedule(ex, dayIndex, slotIndex, primaryGoal, intensityRating) {
+  const prescription = getPrescription(primaryGoal, ex.tier, intensityRating);
+  const patternMeta = Object.values(MOVEMENT_PATTERNS).find((p) => p.id === ex.movementPattern);
+  const { primaryLabels, secondaryLabels } = formatMuscleLabels(
+    ex.primaryMuscles,
+    ex.secondaryMuscles
+  );
+
+  return {
+    id: `ex-${dayIndex}-${slotIndex + 1}-${ex.id}`,
+    catalogId: ex.id,
+    wgerId: ex.wgerId,
+    name: ex.name,
+    category: ex.category,
+    movementPattern: ex.movementPattern,
+    movementPatternLabel: patternMeta?.label || ex.movementPattern,
+    tier: ex.tier || 'compound',
+    difficulty: ex.difficulty || 'intermediate',
+    equipment: ex.equipment || [],
+    primaryMuscles: ex.primaryMuscles || [],
+    secondaryMuscles: ex.secondaryMuscles || [],
+    primaryMuscleLabels: primaryLabels,
+    secondaryMuscleLabels: secondaryLabels,
+    jointStress: ex.jointStress || [],
+    svgType: ex.svgType || 'squat',
+    formCues: ex.formCues || [],
+    sets: prescription.sets,
+    reps: prescription.reps,
+    restSeconds: prescription.restSeconds,
+    substitutions: ex.substitutions || ['Dumbbell Alternative', 'Bodyweight Variation'],
+  };
+}
+
+/**
+ * Scores an exercise candidate based on Movement Pattern slot, User Feedback, Focus Areas, and Weekly Variety.
+ */
+function scoreCandidate(ex, {
+  targetPattern,
+  slotIndex,
+  likedSet,
+  focusAreas,
+  usedInDaySet,
+  usedInWeekCounts,
+  preferSimpler,
+}) {
+  if (usedInDaySet.has(ex.id)) return -9999;
+
+  let score = 0;
+
+  // 1. Movement pattern match
+  if (ex.movementPattern === targetPattern) {
+    score += 100;
+  } else if (
+    (targetPattern === 'squat' && ex.movementPattern === 'lunge') ||
+    (targetPattern === 'lunge' && ex.movementPattern === 'squat')
+  ) {
+    score += 45;
+  }
+
+  // 2. Tier ordering: early slots in the workout prefer compound lifts; later slots prefer isolation/accessory
+  if (slotIndex <= 2 && ex.tier === 'compound') {
+    score += 25;
+  } else if (slotIndex >= 3 && (ex.tier === 'isolation' || ex.tier === 'accessory')) {
+    score += 20;
+  }
+
+  // 3. User Feedback Loop: Boost liked exercises
+  if (likedSet.has(ex.id) || likedSet.has(ex.name)) {
+    score += 45;
+  }
+
+  // 4. User Feedback Loop: Complexity preference
+  if (preferSimpler && ex.difficulty === 'beginner') {
+    score += 20;
+  }
+
+  // 5. Focus Areas boost
+  if (focusAreas && focusAreas.length > 0) {
+    const normalizedFocus = focusAreas.map((f) => f.toLowerCase());
+    const catMatch = normalizedFocus.includes((ex.category || '').toLowerCase());
+    const muscleMatch = (ex.primaryMuscles || []).some((m) =>
+      normalizedFocus.some((f) => f.includes(m) || (MUSCLE_GROUPS[m]?.label || '').toLowerCase().includes(f))
+    );
+    if (catMatch || muscleMatch) {
+      score += 30;
+    }
+  }
+
+  // 6. Weekly variety penalty: avoid repeating the exact same exercise every day
+  const timesUsedThisWeek = usedInWeekCounts.get(ex.id) || 0;
+  score -= timesUsedThisWeek * 40;
+
+  return score;
+}
+
+/**
+ * Finds the best replacement exercise when a user swaps an exercise with a feedback reason.
+ */
+export function findReplacementExercise({
+  currentExercise,
+  storeState,
+  existingDayCatalogIds = [],
+  reason = 'dislike',
+}) {
+  const userProfile = storeState?.userProfile || {};
+  const logistics = storeState?.logistics || {};
+  const targeting = storeState?.targeting || {};
+  const feedback = storeState?.feedback || {};
+
+  const primaryGoal = userProfile.primaryGoal || 'Hypertrophy / Muscle';
+  const location = logistics.location || 'Commercial Gym';
+  const exclusionZones = targeting.exclusionZones || [];
+  const dislikedIds = [...(feedback.dislikedExerciseIds || []), currentExercise.catalogId];
+  const likedSet = new Set(feedback.likedExerciseIds || []);
+  const intensityRating = feedback.intensityRating || 'optimal';
+
+  const candidates = filterCandidateExercises({
+    location,
+    exclusionZones,
+    dislikedExerciseIds: dislikedIds,
+  });
+
+  const excludedToday = new Set([...existingDayCatalogIds, currentExercise.catalogId]);
+
+  const scored = candidates
+    .filter((ex) => !excludedToday.has(ex.id))
+    .map((ex) => {
+      let score = 0;
+
+      // Match movement pattern first, then category
+      if (ex.movementPattern === currentExercise.movementPattern) {
+        score += 100;
+      } else if (ex.category === currentExercise.category) {
+        score += 65;
+      }
+
+      // Match primary muscle
+      const sharesPrimaryMuscle = (ex.primaryMuscles || []).some((m) =>
+        (currentExercise.primaryMuscles || []).includes(m)
+      );
+      if (sharesPrimaryMuscle) score += 35;
+
+      // Reason-specific intelligence
+      if (reason === 'joint_pain') {
+        if (!ex.jointStress || ex.jointStress.length === 0) {
+          score += 60;
+        } else {
+          score -= 40;
+        }
+      } else if (reason === 'too_hard') {
+        if (ex.difficulty === 'beginner') score += 50;
+      } else if (reason === 'equipment_busy') {
+        const currentEquip = (currentExercise.equipment || [])[0];
+        const nextEquip = (ex.equipment || [])[0];
+        if (currentEquip && nextEquip && currentEquip !== nextEquip) {
+          score += 45;
+        }
+      }
+
+      if (likedSet.has(ex.id)) score += 35;
+
+      return { ex, score };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  const chosen = scored[0]?.ex || candidates[0] || WGER_EXERCISE_CATALOG[0];
+
+  return hydrateExerciseForSchedule(
+    chosen,
+    1,
+    0,
+    primaryGoal,
+    intensityRating
+  );
+}
+
+/**
+ * Generates a biomechanically balanced workout plan using the Movement Pattern Taxonomy
+ * and User Feedback Loop.
  */
 export async function generateWorkout(storeState) {
   const userProfile = storeState?.userProfile || {};
   const logistics = storeState?.logistics || {};
   const targeting = storeState?.targeting || {};
+  const feedback = storeState?.feedback || {};
 
   const primaryGoal = userProfile.primaryGoal || userProfile.goal || 'Hypertrophy / Muscle';
   const cycleLengthWeeks = Number(userProfile.cycleLengthWeeks) || 8;
   const location = logistics.location || 'Commercial Gym';
-  const frequencyDays = Math.max(1, Math.min(7, Number(logistics.frequencyDays || logistics.frequency) || 3));
+  const frequencyDays = Math.max(2, Math.min(6, Number(logistics.frequencyDays || logistics.frequency) || 4));
   const durationMinutes = Number(logistics.durationMinutes || logistics.duration) || 60;
   const exclusionZones = Array.isArray(targeting.exclusionZones) ? targeting.exclusionZones : [];
   const focusAreas = Array.isArray(targeting.focusAreas) ? targeting.focusAreas : [];
 
-  // Simulate network latency (800ms - 1200ms)
-  await new Promise((resolve) => setTimeout(resolve, 900));
+  const likedSet = new Set(feedback.likedExerciseIds || []);
+  const dislikedExerciseIds = feedback.dislikedExerciseIds || [];
+  const intensityRating = feedback.intensityRating || 'optimal';
+  const preferSimpler = feedback.preferSimplerMovements || false;
 
-  const basePool = EXERCISE_CATALOG[location] || EXERCISE_CATALOG['Commercial Gym'];
-  const safePool = filterSafeExercises(basePool, exclusionZones);
-  const prescription = getPrescription(primaryGoal);
+  // Brief transition delay for UX polish
+  await new Promise((resolve) => setTimeout(resolve, 650));
 
-  const dayLabels = [
-    'Upper Body Power',
-    'Lower Body & Core',
-    'Push & Shoulder Focus',
-    'Pull & Posterior Chain',
-    'Full Body Functional Circuit',
-    'Upper Body Hypertrophy',
-    'Core & Mobility Flow',
-  ];
+  const safePool = filterCandidateExercises({
+    location,
+    exclusionZones,
+    dislikedExerciseIds,
+  });
 
+  // Determine number of exercises per session based on duration
+  const exerciseCountPerDay =
+    durationMinutes >= 75 ? 6 : durationMinutes >= 60 ? 5 : durationMinutes >= 45 ? 4 : 3;
+
+  // Map focus areas to bonus movement pattern if 6 exercises requested
+  const focusPatternMap = {
+    Chest: 'horizontal_push',
+    Back: 'horizontal_pull',
+    Shoulders: 'vertical_push',
+    Legs: 'squat',
+    Glutes: 'hinge',
+    Arms: 'elbow_flexion',
+    Core: 'core_stability',
+  };
+
+  const splitDays = SPLIT_TEMPLATES[frequencyDays] || SPLIT_TEMPLATES[4];
+  const usedInWeekCounts = new Map();
   const schedule = [];
-  const exerciseCountPerDay = durationMinutes >= 60 ? 5 : durationMinutes >= 45 ? 4 : 3;
 
   for (let d = 0; d < frequencyDays; d++) {
     const dayIndex = d + 1;
-    const labelTitle = dayLabels[d % dayLabels.length];
-    
-    // Shuffle/rotate safe exercises to give variety
-    const rotatedPool = [
-      ...safePool.slice(d % safePool.length),
-      ...safePool.slice(0, d % safePool.length),
-    ];
+    const template = splitDays[d % splitDays.length];
+    const patternsForDay = [...template.patterns];
 
-    const exercises = rotatedPool.slice(0, exerciseCountPerDay).map((ex, idx) => ({
-      id: `ex-${dayIndex}-${idx + 1}`,
-      name: ex.name,
-      sets: prescription.sets,
-      reps: prescription.reps, // e.g., "8-12"
-      restSeconds: prescription.restSeconds,
-      substitutions: ex.substitutions || ['Dumbbell Alternative', 'Cable Alternative'],
-    }));
+    // If session is 75m (6 exercises) or user has a focus area, append a targeted pattern
+    if (patternsForDay.length < exerciseCountPerDay) {
+      const focusArea = focusAreas[d % Math.max(1, focusAreas.length)];
+      const bonusPattern = focusPatternMap[focusArea] || 'core_stability';
+      patternsForDay.push(bonusPattern);
+    }
+
+    const activePatterns = patternsForDay.slice(0, exerciseCountPerDay);
+    const usedInDaySet = new Set();
+    const dayExercises = [];
+
+    activePatterns.forEach((pattern, slotIdx) => {
+      const ranked = safePool
+        .map((candidate) => ({
+          candidate,
+          score: scoreCandidate(candidate, {
+            targetPattern: pattern,
+            slotIndex: slotIdx,
+            likedSet,
+            focusAreas,
+            usedInDaySet,
+            usedInWeekCounts,
+            preferSimpler,
+          }),
+        }))
+        .sort((a, b) => b.score - a.score);
+
+      const selected = ranked[0]?.candidate || safePool[slotIdx % safePool.length];
+      if (selected) {
+        usedInDaySet.add(selected.id);
+        usedInWeekCounts.set(selected.id, (usedInWeekCounts.get(selected.id) || 0) + 1);
+        dayExercises.push(
+          hydrateExerciseForSchedule(selected, dayIndex, slotIdx, primaryGoal, intensityRating)
+        );
+      }
+    });
 
     schedule.push({
       dayNumber: dayIndex,
-      dayLabel: `Day ${dayIndex}: ${labelTitle}`,
-      exercises,
+      dayLabel: `Day ${dayIndex}: ${template.label}`,
+      exercises: dayExercises,
     });
   }
 
   const workoutPlan = {
     id: `plan_${Date.now()}`,
     programName: `${cycleLengthWeeks}-Week ${primaryGoal} Blueprint`,
+    taxonomyVersion: 'wger-v2-biomechanical',
     warmupRoutine: {
-      cardioPrimer: '5-7 minutes light dynamic cardio (treadmill incline walk, assault bike, or jump rope) to raise core body temp.',
+      cardioPrimer:
+        '5-7 minutes light dynamic cardio (incline treadmill walk, assault bike, or jump rope) to elevate core temperature and synovial joint fluid.',
       dynamicMobility: [
         'World’s Greatest Stretch with thoracic rotations (5 reps/side)',
-        'Arm Circles & Shoulder Band Dislocates (15 reps)',
-        'Bodyweight Deep Squats with 3s Bottom Pause (10 reps)',
-        'Cat-Cow to Bird-Dog dynamic spinal wave (8 reps/side)',
+        'Scapular Band Pull-Aparts & Shoulder Dislocates (15 reps)',
+        'Deep Prying Goblet/Bodyweight Squat Hold (30s bottom pause)',
+        'Cat-Cow to Contralateral Bird-Dog Reach (8 reps/side)',
       ],
     },
     schedule,
