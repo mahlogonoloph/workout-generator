@@ -91,7 +91,8 @@ export default function RoutineScreen({ navigation }) {
             movementPattern: 'horizontal_pull',
             movementPatternLabel: 'Horizontal Pull',
             tier: 'compound',
-            svgType: 'row',
+            svgType: 'seated_cable_row',
+            svgAccuracy: 'exact',
             primaryMuscles: ['upper_back', 'lats'],
             secondaryMuscles: ['biceps', 'posterior_deltoid'],
             primaryMuscleLabels: ['Upper Back', 'Lats'],
@@ -116,6 +117,8 @@ export default function RoutineScreen({ navigation }) {
             movementPatternLabel: 'Vertical Push',
             tier: 'compound',
             svgType: 'overhead_press',
+            svgAccuracy: 'pattern',
+            svgNote: 'Standing overhead path shown • Perform seated on bench',
             primaryMuscles: ['anterior_deltoid', 'lateral_deltoid'],
             secondaryMuscles: ['triceps'],
             primaryMuscleLabels: ['Front Delts', 'Side Delts'],
@@ -454,6 +457,8 @@ export default function RoutineScreen({ navigation }) {
                 {/* Visual SVG Diagram + Anatomical Muscle Map */}
                 <ExerciseIllustrationSvg
                   svgType={exercise.svgType || 'squat'}
+                  svgAccuracy={exercise.svgAccuracy || 'exact'}
+                  svgNote={exercise.svgNote || null}
                   primaryMuscles={exercise.primaryMuscles || []}
                   secondaryMuscles={exercise.secondaryMuscles || []}
                 />

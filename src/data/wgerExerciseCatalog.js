@@ -175,7 +175,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['pectorals', 'triceps'],
     secondaryMuscles: ['anterior_deltoid'],
     jointStress: [],
-    svgType: 'bench_press',
+    svgType: 'floor_press',
+    svgAccuracy: 'exact',
     formCues: [
       'Lie flat on the floor with knees bent and feet planted firmly.',
       'Lower upper arms gently until triceps pause on the floor for 1 second.',
@@ -197,6 +198,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['anterior_deltoid'],
     jointStress: [],
     svgType: 'cable_fly',
+    svgAccuracy: 'exact',
     formCues: [
       'Step forward into a staggered stance for torso stability.',
       'Keep a slight, fixed bend in your elbows as if hugging a wide tree.',
@@ -217,7 +219,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['pectorals'],
     secondaryMuscles: ['triceps', 'anterior_deltoid'],
     jointStress: [],
-    svgType: 'incline_press',
+    svgType: 'machine_chest_press',
+    svgAccuracy: 'exact',
     formCues: [
       'Adjust seat height so handles align with mid-to-lower chest.',
       'Keep head and shoulder blades glued to the backrest throughout.',
@@ -239,6 +242,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['triceps', 'anterior_deltoid', 'abs'],
     jointStress: ['Wrists'],
     svgType: 'pushup',
+    svgAccuracy: 'exact',
     formCues: [
       'Screw hands into the floor with fingers spread and core braced like a plank.',
       'Lower chest to 1 inch off the floor with elbows tracking at 45°.',
@@ -259,7 +263,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['pectorals', 'anterior_deltoid'],
     secondaryMuscles: ['triceps', 'abs'],
     jointStress: ['Wrists', 'Shoulders'],
-    svgType: 'pushup',
+    svgType: 'decline_pushup',
+    svgAccuracy: 'exact',
     formCues: [
       'Elevate feet on a sturdy chair, step, or bench to target the clavicular pecs.',
       'Prevent lower back sagging by squeezing glutes and bracing abs.',
@@ -327,6 +332,8 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['triceps'],
     jointStress: ['Shoulders'],
     svgType: 'overhead_press',
+    svgAccuracy: 'pattern',
+    svgNote: 'Standing overhead path shown • Perform seated on bench',
     formCues: [
       'Press in the scapular plane (elbows angled ~30° forward rather than flared flat).',
       'Lower dumbbells until bells touch just above shoulder level.',
@@ -348,6 +355,8 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['triceps'],
     jointStress: ['Shoulders'],
     svgType: 'overhead_press',
+    svgAccuracy: 'pattern',
+    svgNote: 'Vertical press path shown • Add 180° wrist rotation as you press',
     formCues: [
       'Begin at chin level with palms facing toward you (supinated).',
       'Rotate wrists smoothly outward as you press overhead to a pronated top position.',
@@ -369,6 +378,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['anterior_deltoid', 'upper_back'],
     jointStress: [],
     svgType: 'lateral_raise',
+    svgAccuracy: 'exact',
     formCues: [
       'Hinge slightly forward at the hips (~10°) and lead with your elbows, not wrists.',
       'Raise arms outward in the scapular plane up to shoulder height.',
@@ -390,6 +400,8 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['upper_back'],
     jointStress: [],
     svgType: 'lateral_raise',
+    svgAccuracy: 'pattern',
+    svgNote: 'Bilateral raise shown • Perform unilaterally with low cable',
     formCues: [
       'Set pulley to wrist height so tension starts from the very bottom of the rep.',
       'Sweep the hand outward in a wide arc up to shoulder level.',
@@ -410,7 +422,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['anterior_deltoid', 'lateral_deltoid'],
     secondaryMuscles: ['triceps', 'upper_back'],
     jointStress: ['Shoulders', 'Wrists'],
-    svgType: 'pushup',
+    svgType: 'pike_pushup',
+    svgAccuracy: 'exact',
     formCues: [
       'Hike hips high into an inverted V position with heels lifted.',
       'Lower the crown of your head forward between your hands to create a tripod.',
@@ -432,6 +445,8 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['lateral_deltoid'],
     jointStress: [],
     svgType: 'lateral_raise',
+    svgAccuracy: 'pattern',
+    svgNote: 'Standing abduction shown • Perform lying chest-down on mat',
     formCues: [
       'Lie chest-down on a mat or incline bench with thumbs pointing up.',
       'Lift arms into a Y, then T, then W shape by squeezing shoulder blades.',
@@ -457,6 +472,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['biceps', 'upper_back', 'posterior_deltoid'],
     jointStress: [],
     svgType: 'lat_pulldown',
+    svgAccuracy: 'exact',
     formCues: [
       'Lock thighs under the knee pad and lean torso back slightly (~15°).',
       'Initiate by depressing shoulder blades, driving elbows down toward your hips.',
@@ -477,7 +493,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['lats', 'upper_back'],
     secondaryMuscles: ['biceps', 'forearms', 'abs'],
     jointStress: ['Shoulders', 'Elbows'],
-    svgType: 'lat_pulldown',
+    svgType: 'pullup',
+    svgAccuracy: 'exact',
     formCues: [
       'Grip the bar slightly wider than shoulder-width in an active hang.',
       'Pull elbows down toward your ribs until your chin clears the bar.',
@@ -498,7 +515,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['lats', 'biceps'],
     secondaryMuscles: ['upper_back', 'forearms'],
     jointStress: ['Elbows', 'Wrists'],
-    svgType: 'lat_pulldown',
+    svgType: 'pullup',
+    svgAccuracy: 'exact',
     formCues: [
       'Use a shoulder-width supinated (palms facing you) grip.',
       'Keep chest proud and pull until collarbones reach the bar.',
@@ -519,7 +537,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['lats'],
     secondaryMuscles: ['triceps', 'abs'],
     jointStress: [],
-    svgType: 'lat_pulldown',
+    svgType: 'straight_arm_pulldown',
+    svgAccuracy: 'exact',
     formCues: [
       'Hinge hips back ~30° with arms extended and a slight bend in elbows.',
       'Sweep the bar or rope in an arc down to your thighs using pure lat contraction.',
@@ -540,7 +559,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['lats', 'pectorals'],
     secondaryMuscles: ['triceps'],
     jointStress: ['Shoulders'],
-    svgType: 'bench_press',
+    svgType: 'db_pullover',
+    svgAccuracy: 'exact',
     formCues: [
       'Hold one dumbbell with a diamond grip overhead while lying on a bench.',
       'Arc the weight behind your head until you feel a deep stretch in your lats.',
@@ -566,6 +586,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['biceps', 'posterior_deltoid', 'lower_back'],
     jointStress: ['Lower Back'],
     svgType: 'row',
+    svgAccuracy: 'exact',
     formCues: [
       'Hinge at the hips until torso is ~30-45° above parallel with a flat spine.',
       'Row the bar into your lower ribs/navel while squeezing shoulder blades together.',
@@ -586,7 +607,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['lats', 'upper_back'],
     secondaryMuscles: ['biceps', 'posterior_deltoid'],
     jointStress: [],
-    svgType: 'row',
+    svgType: 'one_arm_db_row',
+    svgAccuracy: 'exact',
     formCues: [
       'Support non-working hand on a bench or knee to unload the lower back.',
       'Pull the dumbbell back in an arc toward your hip pocket (like starting a lawnmower).',
@@ -607,7 +629,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['upper_back', 'lats'],
     secondaryMuscles: ['biceps', 'posterior_deltoid'],
     jointStress: [],
-    svgType: 'row',
+    svgType: 'seated_cable_row',
+    svgAccuracy: 'exact',
     formCues: [
       'Sit tall with knees slightly bent and chest up.',
       'Pull the handle to your midsection while driving elbows past your torso.',
@@ -628,7 +651,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['upper_back', 'lats'],
     secondaryMuscles: ['posterior_deltoid', 'biceps'],
     jointStress: [],
-    svgType: 'row',
+    svgType: 'chest_supported_row',
+    svgAccuracy: 'exact',
     formCues: [
       'Lie chest-down on a 30–45° incline bench—zero lower back shear stress.',
       'Row both dumbbells up and back, retracting your scapulae hard at the top.',
@@ -649,7 +673,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['upper_back', 'lats'],
     secondaryMuscles: ['biceps', 'posterior_deltoid', 'abs'],
     jointStress: [],
-    svgType: 'row',
+    svgType: 'inverted_row',
+    svgAccuracy: 'exact',
     formCues: [
       'Hang underneath a low bar or sturdy table with body in a straight plank line.',
       'Pull your chest up to touch the bar by squeezing your shoulder blades together.',
@@ -670,7 +695,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['posterior_deltoid', 'upper_back'],
     secondaryMuscles: ['biceps'],
     jointStress: [],
-    svgType: 'row',
+    svgType: 'face_pull',
+    svgAccuracy: 'exact',
     formCues: [
       'Set cable pulley at upper-chest to eye height.',
       'Pull the rope ends apart toward your forehead while externally rotating shoulders.',
@@ -691,7 +717,9 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['posterior_deltoid', 'upper_back'],
     secondaryMuscles: [],
     jointStress: [],
-    svgType: 'lateral_raise',
+    svgType: 'row',
+    svgAccuracy: 'pattern',
+    svgNote: 'Hinged posture shown • Sweep arms wide to sides instead of rowing',
     formCues: [
       'Hinge torso forward until nearly parallel to the floor.',
       'Sweep dumbbells outward in a wide arc leading with pinkies/elbows.',
@@ -758,7 +786,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['quads', 'glutes'],
     secondaryMuscles: ['abs', 'upper_back'],
     jointStress: ['Knees'],
-    svgType: 'squat',
+    svgType: 'goblet_squat',
+    svgAccuracy: 'exact',
     formCues: [
       'Hold one dumbbell vertically against your sternum with elbows tucked in.',
       'Sit down between your heels while keeping an upright, proud torso.',
@@ -779,7 +808,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['quads'],
     secondaryMuscles: [],
     jointStress: ['Knees'],
-    svgType: 'leg_press',
+    svgType: 'leg_extension',
+    svgAccuracy: 'exact',
     formCues: [
       'Align knee joint axis directly with the machine pivot point.',
       'Extend legs to full contraction with toes dorsiflexed (pulled up).',
@@ -800,7 +830,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['quads', 'glutes'],
     secondaryMuscles: ['abs'],
     jointStress: [],
-    svgType: 'squat',
+    svgType: 'air_squat',
+    svgAccuracy: 'exact',
     formCues: [
       'Reach arms forward as a counterbalance as you descend for 3 seconds.',
       'Keep full foot tripod (big toe, little toe, heel) planted on the ground.',
@@ -821,7 +852,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['quads'],
     secondaryMuscles: ['glutes', 'calves'],
     jointStress: [],
-    svgType: 'squat',
+    svgType: 'wall_sit',
+    svgAccuracy: 'exact',
     formCues: [
       'Press flat back against a wall with thighs parallel to the ground and shins vertical.',
       'Drive through heels and breathe steadily for 45–60 seconds per set.',
@@ -847,6 +879,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['lower_back', 'upper_back', 'forearms'],
     jointStress: ['Lower Back'],
     svgType: 'hinge',
+    svgAccuracy: 'exact',
     formCues: [
       'Unlock knees ~15° and push hips straight back toward the wall behind you.',
       'Slide the barbell closely down your thighs until you feel a deep hamstring stretch (mid-shin).',
@@ -868,6 +901,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['lower_back', 'forearms'],
     jointStress: ['Lower Back'],
     svgType: 'hinge',
+    svgAccuracy: 'exact',
     formCues: [
       'Hold dumbbells at the sides of your thighs with lats engaged.',
       'Hinge purely from the hip joint while keeping a neutral spine.',
@@ -888,7 +922,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['hamstrings'],
     secondaryMuscles: ['calves'],
     jointStress: [],
-    svgType: 'leg_press',
+    svgType: 'leg_curl',
+    svgAccuracy: 'exact',
     formCues: [
       'Set ankle pad just above the Achilles tendon and lock thigh pad snugly.',
       'Curl heels all the way back with zero lower back involvement.',
@@ -910,6 +945,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['hamstrings', 'abs'],
     jointStress: [],
     svgType: 'glute_bridge',
+    svgAccuracy: 'exact',
     formCues: [
       'Anchor upper back (just below shoulder blades) on a bench with shins vertical at top.',
       'Drive through heels to extend hips until torso is parallel to the floor.',
@@ -931,6 +967,8 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['abs'],
     jointStress: [],
     svgType: 'glute_bridge',
+    svgAccuracy: 'pattern',
+    svgNote: 'Hip extension bridge shown • Perform on floor with one leg raised',
     formCues: [
       'Lie on your back with one foot planted and the opposite knee hugged toward chest.',
       'Drive through the planted heel to lift hips into full extension.',
@@ -955,7 +993,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['quads', 'glutes'],
     secondaryMuscles: ['hamstrings', 'abs'],
     jointStress: ['Knees'],
-    svgType: 'lunge',
+    svgType: 'bulgarian_split_squat',
+    svgAccuracy: 'exact',
     formCues: [
       'Place rear laces on a bench or chair ~2 feet behind your front heel.',
       'Lower your back knee toward the floor with a slight forward torso lean for glute/quad synergy.',
@@ -977,6 +1016,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['hamstrings', 'calves'],
     jointStress: [],
     svgType: 'lunge',
+    svgAccuracy: 'exact',
     formCues: [
       'Step backward (much friendlier on the knee joint than forward lunges).',
       'Keep front shin nearly vertical and descend until both knees form 90° angles.',
@@ -997,7 +1037,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['calves'],
     secondaryMuscles: [],
     jointStress: [],
-    svgType: 'squat',
+    svgType: 'calf_raise',
+    svgAccuracy: 'exact',
     formCues: [
       'Lower heels below the step for a full 2-second Achilles & gastrocnemius stretch.',
       'Press all the way up onto the balls of your feet and pause 1 second at the peak.',
@@ -1023,6 +1064,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['forearms'],
     jointStress: ['Wrists', 'Elbows'],
     svgType: 'bicep_curl',
+    svgAccuracy: 'exact',
     formCues: [
       'Pin elbows at your sides and use the angled EZ-bar grip to protect wrists.',
       'Curl the bar in an arc to shoulder height while squeezing biceps hard.',
@@ -1043,7 +1085,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['biceps'],
     secondaryMuscles: ['forearms'],
     jointStress: [],
-    svgType: 'bicep_curl',
+    svgType: 'incline_curl',
+    svgAccuracy: 'exact',
     formCues: [
       'Sit back on a 45–60° incline bench so arms hang behind your torso (long head stretch).',
       'Curl dumbbells up while supinating (turning palms up) and keeping elbows stationary.',
@@ -1065,6 +1108,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: [],
     jointStress: [],
     svgType: 'bicep_curl',
+    svgAccuracy: 'exact',
     formCues: [
       'Keep palms facing each other (neutral grip)—very gentle on wrists and elbows.',
       'Targets both the biceps brachii and the brachialis for arm thickness.',
@@ -1090,6 +1134,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: [],
     jointStress: ['Elbows'],
     svgType: 'tricep_ext',
+    svgAccuracy: 'exact',
     formCues: [
       'Tuck elbows snugly against your ribs and hinge slightly forward.',
       'Press the rope down and flare the ends outward at full elbow lockout.',
@@ -1110,7 +1155,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['triceps'],
     secondaryMuscles: ['abs'],
     jointStress: ['Elbows', 'Shoulders'],
-    svgType: 'tricep_ext',
+    svgType: 'overhead_tricep_ext',
+    svgAccuracy: 'exact',
     formCues: [
       'Overhead arm position maximally stretches the long head of the triceps.',
       'Lower weight behind your head by bending only at the elbows.',
@@ -1132,6 +1178,8 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['anterior_deltoid', 'abs'],
     jointStress: ['Wrists', 'Elbows'],
     svgType: 'pushup',
+    svgAccuracy: 'pattern',
+    svgNote: 'Push-up posture shown • Place hands close together in a diamond',
     formCues: [
       'Place hands slightly narrower than shoulder-width with elbows grazing your ribs.',
       'Lower chest under control and press forcefully through palms to lock out triceps.',
@@ -1157,6 +1205,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['forearms'],
     jointStress: ['Shoulders'],
     svgType: 'core_hang',
+    svgAccuracy: 'exact',
     formCues: [
       'Curly pelvis upward (posterior pelvic tilt) rather than just swinging legs.',
       'Exhale at the top contraction and lower legs slowly without swinging.',
@@ -1178,6 +1227,8 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: ['glutes'],
     jointStress: [],
     svgType: 'cable_fly',
+    svgAccuracy: 'pattern',
+    svgNote: 'Cable setup shown • Stand sideways & press handle straight out',
     formCues: [
       'Stand perpendicular to the cable column with feet shoulder-width apart.',
       'Press handle straight out from sternum and resist the rotational pull for 2 seconds.',
@@ -1199,6 +1250,7 @@ export const WGER_EXERCISE_CATALOG = [
     secondaryMuscles: [],
     jointStress: [],
     svgType: 'core_floor',
+    svgAccuracy: 'exact',
     formCues: [
       'Lie on your back and press your lower back flat into the floor (zero gap).',
       'Extend opposite arm and leg slowly toward the floor while exhaling fully.',
@@ -1219,7 +1271,8 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['abs', 'obliques'],
     secondaryMuscles: ['glutes'],
     jointStress: [],
-    svgType: 'core_floor',
+    svgType: 'plank',
+    svgAccuracy: 'exact',
     formCues: [
       'Pull elbows metaphorically toward your toes while squeezing glutes and quads.',
       'Maintain a posteriorly tilted pelvis for maximum anterior core recruitment.',
@@ -1240,7 +1293,9 @@ export const WGER_EXERCISE_CATALOG = [
     primaryMuscles: ['obliques', 'glutes'],
     secondaryMuscles: ['abs'],
     jointStress: ['Shoulders'],
-    svgType: 'core_floor',
+    svgType: 'plank',
+    svgAccuracy: 'pattern',
+    svgNote: 'Prone plank shown • Stack laterally on one forearm & foot',
     formCues: [
       'Stack elbow directly underneath shoulder and lift hips into a straight diagonal line.',
       'Keep hips stacked vertically without rolling forward or backward.',

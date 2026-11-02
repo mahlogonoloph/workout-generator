@@ -330,7 +330,7 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
                 (ex, idx) => `
               <tr>
                 <td class="col-svg">
-                  ${getExercisePdfSvgMarkup(ex.svgType || 'squat')}
+                  ${getExercisePdfSvgMarkup(ex.svgType || 'squat', ex.svgAccuracy || 'exact')}
                 </td>
                 <td class="col-name">
                   <div>${idx + 1}. ${ex.name}</div>
@@ -338,6 +338,7 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
                     ${ex.movementPatternLabel ? `<span class="pattern-pill">${ex.movementPatternLabel}</span>` : ''}
                     ${(ex.primaryMuscleLabels || []).map((m) => `<span class="muscle-pill">${m}</span>`).join('')}
                   </div>
+                  ${ex.svgNote ? `<div class="cue-item" style="color:#B86B35;font-weight:600;">≈ ${ex.svgNote}</div>` : ''}
                   ${(ex.formCues || [])
                     .slice(0, 2)
                     .map((cue) => `<div class="cue-item">• ${cue}</div>`)
