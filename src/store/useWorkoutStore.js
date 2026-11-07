@@ -3,6 +3,7 @@ import {
   generateWorkout as apiGenerateWorkout,
   findReplacementExercise,
   getPrescription,
+  hydrateExerciseForSchedule,
 } from '../api/generationClient.js';
 
 /**
@@ -41,6 +42,8 @@ export const useWorkoutStore = create((set, get) => ({
   feedback: { ...initialFeedback },
   isGenerating: false,
   generatedRoutine: null,
+  originalGeneratedRoutine: null,
+  isEdited: false,
   error: null,
 
   // Section Level Setters
@@ -266,6 +269,7 @@ export const useWorkoutStore = create((set, get) => ({
       };
 
       return {
+        isEdited: true,
         feedback: {
           ...state.feedback,
           likedExerciseIds: updatedLiked,
@@ -278,6 +282,154 @@ export const useWorkoutStore = create((set, get) => ({
           ...routine,
           schedule: updatedSchedule,
         },
+      };
+    }),
+
+  /**
+   * Updates prescription (sets, reps, restSeconds) for a specific exercise in a day.
+   */
+  updateExercisePrescription: ({ dayIndex, exerciseIndex, sets, reps, restSeconds }) =>
+    set((state) => {
+      const routine = state.generatedRoutine;
+      if (!routine || !routine.schedule || !routine.schedule[dayIndex]) return state;
+      const day = routine.schedule[dayIndex];
+      const currentEx = day.exercises[exerciseIndex];
+      if (!currentEx) return state;
+
+      const updatedExercises = [...day.exercises];
+      updatedExercises[exerciseIndex] = {
+        ...currentEx,
+        sets: sets !== undefined ? Number(sets) : currentEx.sets,
+        reps: reps !== undefined ? String(reps) : currentEx.reps,
+        restSeconds: restSeconds !== undefined ? Number(restSeconds) : currentEx.restSeconds,
+      };
+
+      const updatedSchedule = [...routine.schedule];
+      updatedSchedule[dayIndex] = {
+        ...day,
+        exercises: updatedExercises,
+      };
+
+      return {
+        isEdited: true,
+        generatedRoutine: {
+          ...routine,
+          schedule: updatedSchedule,
+        },
+      };
+    }),
+
+  /**
+   * Deletes an exercise from a specific day in the routine.
+   */
+  deleteExercise: ({ dayIndex, exerciseIndex }) =>
+    set((state) => {
+      const routine = state.generatedRoutine;
+      if (!routine || !routine.schedule || !routine.schedule[dayIndex]) return state;
+      const day = routine.schedule[dayIndex];
+      if (!day.exercises || !day.exercises[exerciseIndex]) return state;
+
+      const updatedExercises = day.exercises.filter((_, idx) => idx !== exerciseIndex);
+      const updatedSchedule = [...routine.schedule];
+      updatedSchedule[dayIndex] = {
+        ...day,
+        exercises: updatedExercises,
+      };
+
+      return {
+        isEdited: true,
+        generatedRoutine: {
+          ...routine,
+          schedule: updatedSchedule,
+        },
+      };
+    }),
+
+  /**
+   * Adds an exercise selected from the catalog to a specific day.
+   */
+  addExerciseToDay: ({ dayIndex, catalogExercise }) =>
+    set((state) => {
+      const routine = state.generatedRoutine;
+      if (!routine || !routine.schedule || !routine.schedule[dayIndex]) return state;
+      const day = routine.schedule[dayIndex];
+      const currentExercises = day.exercises || [];
+
+      const primaryGoal = state.userProfile?.primaryGoal || 'Hypertrophy / Muscle';
+      const intensityRating = state.feedback?.intensityRating || 'optimal';
+      const dayNumber = day.dayNumber || dayIndex + 1;
+      const slotIndex = currentExercises.length;
+
+      const hydrated = hydrateExerciseForSchedule(
+        catalogExercise,
+        dayNumber,
+        slotIndex,
+        primaryGoal,
+        intensityRating
+      );
+
+      const updatedSchedule = [...routine.schedule];
+      updatedSchedule[dayIndex] = {
+        ...day,
+        exercises: [...currentExercises, hydrated],
+      };
+
+      return {
+        isEdited: true,
+        generatedRoutine: {
+          ...routine,
+          schedule: updatedSchedule,
+        },
+      };
+    }),
+
+  /**
+   * Reorders exercises within a day (moves item from fromIndex to toIndex).
+   */
+  reorderExercise: ({ dayIndex, fromIndex, toIndex }) =>
+    set((state) => {
+      const routine = state.generatedRoutine;
+      if (!routine || !routine.schedule || !routine.schedule[dayIndex]) return state;
+      const day = routine.schedule[dayIndex];
+      const exercises = [...(day.exercises || [])];
+
+      if (
+        fromIndex < 0 ||
+        fromIndex >= exercises.length ||
+        toIndex < 0 ||
+        toIndex >= exercises.length ||
+        fromIndex === toIndex
+      ) {
+        return state;
+      }
+
+      const [moved] = exercises.splice(fromIndex, 1);
+      exercises.splice(toIndex, 0, moved);
+
+      const updatedSchedule = [...routine.schedule];
+      updatedSchedule[dayIndex] = {
+        ...day,
+        exercises,
+      };
+
+      return {
+        isEdited: true,
+        generatedRoutine: {
+          ...routine,
+          schedule: updatedSchedule,
+        },
+      };
+    }),
+
+  /**
+   * Reverts all manual customizations back to the original AI-generated routine blueprint.
+   */
+  resetToOriginalRoutine: () =>
+    set((state) => {
+      if (!state.originalGeneratedRoutine) return state;
+      return {
+        generatedRoutine: JSON.parse(JSON.stringify(state.originalGeneratedRoutine)),
+        isEdited: false,
       };
     }),
 
@@ -328,7 +480,14 @@ export const useWorkoutStore = create((set, get) => ({
   // Status & Routine Setters
   setIsGenerating: (isGenerating) => set({ isGenerating }),
   setError: (error) => set({ error }),
-  setGeneratedRoutine: (generatedRoutine) => set({ generatedRoutine }),
+  setGeneratedRoutine: (generatedRoutine) =>
+    set((state) => ({
+      generatedRoutine,
+      originalGeneratedRoutine:
+        state.originalGeneratedRoutine ||
+        (generatedRoutine ? JSON.parse(JSON.stringify(generatedRoutine)) : null),
+      isEdited: false,
+    })),
 
   // Reset Action
   resetStore: () =>
@@ -339,6 +498,8 @@ export const useWorkoutStore = create((set, get) => ({
       feedback: { ...initialFeedback },
       isGenerating: false,
       generatedRoutine: null,
+      originalGeneratedRoutine: null,
+      isEdited: false,
       error: null,
     }),
 
@@ -348,7 +509,13 @@ export const useWorkoutStore = create((set, get) => ({
     try {
       const currentState = get();
       const plan = await apiGenerateWorkout(currentState);
-      set({ generatedRoutine: plan, isGenerating: false, error: null });
+      set({
+        generatedRoutine: plan,
+        originalGeneratedRoutine: JSON.parse(JSON.stringify(plan)),
+        isEdited: false,
+        isGenerating: false,
+        error: null,
+      });
       return plan;
     } catch (err) {
       const errorMessage = err?.message || 'Failed to generate workout plan.';

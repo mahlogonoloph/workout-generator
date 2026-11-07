@@ -196,8 +196,9 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
       border-bottom: none;
     }
     .col-svg {
-      width: 62px;
+      width: 66px;
       text-align: center;
+      padding: 6px 4px;
     }
     .col-name {
       font-weight: 700;
