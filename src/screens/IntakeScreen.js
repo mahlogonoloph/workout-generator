@@ -230,7 +230,7 @@ export default function IntakeScreen({ navigation }) {
                 ]}
               />
             </View>
-            <Text style={styles.purposeTagLabel}>DISTRACTION-FREE 8-WEEK PROGRAMMING</Text>
+            <Text style={styles.purposeTagLabel}>Just a routine generator :D</Text>
           </View>
           <Text style={styles.purposeStatementText}>
             a tool that generates a clean, distraction-free 8-Week Physical Training Binder / PDF
