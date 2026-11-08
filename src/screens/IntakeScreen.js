@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   StyleSheet,
   ScrollView,
   StatusBar,
+  Animated,
+  Easing,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../theme/colors';
@@ -85,6 +87,111 @@ export default function IntakeScreen({ navigation }) {
   const hasFeedbackMemory =
     likedCount > 0 || dislikedCount > 0 || (feedback?.intensityRating && feedback.intensityRating !== 'optimal');
 
+  // Dynamic Volume Calculation for Motion Graphic
+  const estimatedWeeklySets =
+    selectedFrequency *
+    (selectedDuration >= 75 ? 22 : selectedDuration >= 60 ? 18 : selectedDuration >= 45 ? 14 : 10);
+
+  // Innovative Animations & Micro-Interactions
+  const entranceHeroAnim = useRef(new Animated.Value(0)).current;
+  const entranceHeroSlide = useRef(new Animated.Value(14)).current;
+  const entranceSectionAnim = useRef(new Animated.Value(0)).current;
+  const beaconPulse = useRef(new Animated.Value(1)).current;
+  const beaconOpacity = useRef(new Animated.Value(0.75)).current;
+  const ctaPulseScale = useRef(new Animated.Value(1)).current;
+  const volumeMeterAnim = useRef(new Animated.Value(0.4)).current;
+
+  useEffect(() => {
+    // 1. Staggered Entrance
+    Animated.parallel([
+      Animated.timing(entranceHeroAnim, {
+        toValue: 1,
+        duration: 450,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(entranceHeroSlide, {
+        toValue: 0,
+        duration: 450,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(entranceSectionAnim, {
+        toValue: 1,
+        duration: 650,
+        delay: 150,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // 2. Kinetic Beacon Pulse (Signaling active engine)
+    Animated.loop(
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(beaconPulse, {
+            toValue: 2.2,
+            duration: 1600,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(beaconPulse, {
+            toValue: 1,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(beaconOpacity, {
+            toValue: 0,
+            duration: 1600,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(beaconOpacity, {
+            toValue: 0.75,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    ).start();
+
+    // 3. CTA Breathing Pulse
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(ctaPulseScale, {
+          toValue: 1.02,
+          duration: 1800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(ctaPulseScale, {
+          toValue: 1,
+          duration: 1800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  // Update volume meter whenever parameters change
+  useEffect(() => {
+    const targetRatio = Math.max(0.15, Math.min(1, estimatedWeeklySets / 110));
+    Animated.spring(volumeMeterAnim, {
+      toValue: targetRatio,
+      friction: 6,
+      tension: 60,
+      useNativeDriver: false,
+    }).start();
+  }, [estimatedWeeklySets]);
+
+  const volumeMeterWidth = volumeMeterAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
+
   const handleGenerate = () => {
     navigation.navigate('Loading');
   };
@@ -101,13 +208,88 @@ export default function IntakeScreen({ navigation }) {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        {/* App Purpose Hero Banner (Distraction-free statement for new users) */}
+        <Animated.View
+          style={[
+            styles.purposeHeroBanner,
+            {
+              opacity: entranceHeroAnim,
+              transform: [{ translateY: entranceHeroSlide }],
+            },
+          ]}
+        >
+          <View style={styles.purposeTagRow}>
+            <View style={styles.purposeBeaconDot}>
+              <Animated.View
+                style={[
+                  styles.purposeBeaconPulse,
+                  {
+                    transform: [{ scale: beaconPulse }],
+                    opacity: beaconOpacity,
+                  },
+                ]}
+              />
+            </View>
+            <Text style={styles.purposeTagLabel}>DISTRACTION-FREE 8-WEEK PROGRAMMING</Text>
+          </View>
+          <Text style={styles.purposeStatementText}>
+            a tool that generates a clean, distraction-free 8-Week Physical Training Binder / PDF
+          </Text>
+        </Animated.View>
+
+        {/* Live Biomechanical Architecture Metric Bar (Motion Graphic) */}
+        <Animated.View
+          style={[
+            styles.architectureCard,
+            {
+              opacity: entranceHeroAnim,
+              transform: [{ translateY: entranceHeroSlide }],
+            },
+          ]}
+        >
+          <View style={styles.architectureHeaderRow}>
+            <View style={styles.architectureTitleWrap}>
+              <Text style={styles.architectureSub}>CALCULATED ARCHITECTURE</Text>
+              <Text style={styles.architectureMainVal}>
+                ~{estimatedWeeklySets} Sets / Wk • {selectedFrequency} Days/Wk
+              </Text>
+            </View>
+            <View style={styles.architectureBadge}>
+              <Text style={styles.architectureBadgeText}>{selectedLocation}</Text>
+            </View>
+          </View>
+
+          {/* Volume progress meter */}
+          <View style={styles.volumeMeterTrack}>
+            <Animated.View style={[styles.volumeMeterFill, { width: volumeMeterWidth }]} />
+          </View>
+
+          <View style={styles.architectureFooterRow}>
+            <Text style={styles.architectureFooterText}>
+              8-Week Total: ~{estimatedWeeklySets * 8} Working Sets
+            </Text>
+            <Text style={styles.architectureShieldText}>
+              {selectedExclusions.length > 0
+                ? `🛡 ${selectedExclusions.length} Joint Shield(s)`
+                : '🛡 Joint Safety Active'}
+            </Text>
+          </View>
+        </Animated.View>
+
         {/* Header Hero */}
-        <View style={styles.header}>
+        <Animated.View
+          style={[
+            styles.header,
+            {
+              opacity: entranceSectionAnim,
+            },
+          ]}
+        >
           <Text style={styles.title}>Configure Routine</Text>
           <Text style={styles.subtitle}>
             Select your training parameters. The engine calculates volume, periodization, and joint-safe exercise paths.
           </Text>
-        </View>
+        </Animated.View>
 
         {/* Section 1: Primary Training Goal */}
         <View style={styles.section}>
@@ -360,14 +542,16 @@ export default function IntakeScreen({ navigation }) {
 
       {/* Floating Bottom Action Bar */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-        <TouchableOpacity
-          style={styles.primaryButton}
-          activeOpacity={0.85}
-          onPress={handleGenerate}
-        >
-          <Text style={styles.primaryButtonText}>Generate Routine</Text>
-          <Text style={styles.buttonArrow}>→</Text>
-        </TouchableOpacity>
+        <Animated.View style={{ transform: [{ scale: ctaPulseScale }], width: '100%' }}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            activeOpacity={0.85}
+            onPress={handleGenerate}
+          >
+            <Text style={styles.primaryButtonText}>Generate Routine</Text>
+            <Text style={styles.buttonArrow}>→</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
     </View>
   );
@@ -384,8 +568,125 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
   },
+  purposeHeroBanner: {
+    backgroundColor: 'rgba(41, 22, 48, 0.95)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(200, 70, 99, 0.35)',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  purposeTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  purposeBeaconDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  purposeBeaconPulse: {
+    position: 'absolute',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: Colors.primary,
+  },
+  purposeTagLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 1.1,
+  },
+  purposeStatementText: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    letterSpacing: -0.2,
+  },
+  architectureCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  architectureHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  architectureTitleWrap: {
+    flex: 1,
+  },
+  architectureSub: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: Colors.textMuted,
+    letterSpacing: 0.9,
+    marginBottom: 2,
+  },
+  architectureMainVal: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  architectureBadge: {
+    backgroundColor: Colors.surfaceElevated,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  architectureBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: Colors.accent,
+  },
+  volumeMeterTrack: {
+    width: '100%',
+    height: 6,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  volumeMeterFill: {
+    height: '100%',
+    backgroundColor: Colors.primary,
+    borderRadius: 3,
+  },
+  architectureFooterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  architectureFooterText: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  architectureShieldText: {
+    fontSize: 11,
+    color: Colors.success || '#4E9F74',
+    fontWeight: '700',
+  },
   header: {
-    marginBottom: 28,
+    marginBottom: 24,
   },
   title: {
     fontSize: 30,

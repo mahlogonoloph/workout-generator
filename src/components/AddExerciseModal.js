@@ -21,12 +21,29 @@ const CATEGORIES = ['All', 'Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core']
 export default function AddExerciseModal({
   visible,
   dayLabel,
+  mode = 'add', // 'add' | 'swap'
+  swappingExercise = null,
   existingCatalogIds = [],
   onClose,
   onAddExercise,
+  onSelectExercise,
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const isSwapMode = mode === 'swap';
+
+  // Automatically sync category when swapping an exercise
+  React.useEffect(() => {
+    if (visible && swappingExercise?.category) {
+      setSelectedCategory(swappingExercise.category);
+    } else if (visible && !swappingExercise) {
+      setSelectedCategory('All');
+    }
+    if (visible) {
+      setSearchQuery('');
+    }
+  }, [swappingExercise, visible]);
 
   const existingSet = useMemo(() => new Set(existingCatalogIds), [existingCatalogIds]);
 
@@ -63,12 +80,25 @@ export default function AddExerciseModal({
   if (!visible) return null;
 
   const handleSelect = (item) => {
-    onAddExercise(item);
+    if (onSelectExercise) {
+      onSelectExercise(item);
+    } else if (onAddExercise) {
+      onAddExercise(item);
+    }
     onClose();
   };
 
   const renderExerciseItem = ({ item }) => {
-    const isAlreadyAdded = existingSet.has(item.id);
+    const isCurrentSwapping =
+      isSwapMode &&
+      swappingExercise &&
+      (swappingExercise.catalogId === item.id || swappingExercise.name === item.name);
+
+    // In add mode, disable if already in today's workout.
+    // In swap mode, only disable the exercise currently in this slot.
+    const isAlreadyAdded = !isSwapMode && existingSet.has(item.id);
+    const isDisabled = isCurrentSwapping || isAlreadyAdded;
+
     const patternMeta = Object.values(MOVEMENT_PATTERNS).find(
       (p) => p.id === item.movementPattern
     );
@@ -77,7 +107,7 @@ export default function AddExerciseModal({
     );
 
     return (
-      <View style={styles.exerciseCard}>
+      <View style={[styles.exerciseCard, isCurrentSwapping && styles.currentExerciseCard]}>
         <View style={styles.cardInfo}>
           <Text style={styles.cardName}>{item.name}</Text>
           <View style={styles.cardMetaRow}>
@@ -112,19 +142,26 @@ export default function AddExerciseModal({
         <TouchableOpacity
           style={[
             styles.addBtn,
-            isAlreadyAdded && styles.addBtnDisabled,
+            isSwapMode && styles.swapSelectBtn,
+            isDisabled && styles.addBtnDisabled,
           ]}
           activeOpacity={0.75}
-          disabled={isAlreadyAdded}
+          disabled={isDisabled}
           onPress={() => handleSelect(item)}
         >
           <Text
             style={[
               styles.addBtnText,
-              isAlreadyAdded && styles.addBtnTextDisabled,
+              isDisabled && styles.addBtnTextDisabled,
             ]}
           >
-            {isAlreadyAdded ? 'Added ✓' : '＋ Add'}
+            {isCurrentSwapping
+              ? 'Current'
+              : isAlreadyAdded
+              ? 'In Workout'
+              : isSwapMode
+              ? '⇄ Swap'
+              : '＋ Add'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -142,8 +179,14 @@ export default function AddExerciseModal({
         {/* MODAL HEADER */}
         <View style={styles.header}>
           <View style={styles.headerTitleWrap}>
-            <Text style={styles.headerSub}>EXERCISE CATALOG</Text>
-            <Text style={styles.headerTitle}>Add to {dayLabel || 'Routine'}</Text>
+            <Text style={styles.headerSub}>
+              {isSwapMode ? 'EXERCISE LIBRARY • SWAP MOVEMENT' : 'EXERCISE CATALOG'}
+            </Text>
+            <Text style={styles.headerTitle}>
+              {isSwapMode
+                ? `Swap with Chosen Exercise`
+                : `Add to ${dayLabel || 'Routine'}`}
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.closeBtn}
@@ -153,6 +196,23 @@ export default function AddExerciseModal({
             <Text style={styles.closeBtnText}>Done</Text>
           </TouchableOpacity>
         </View>
+
+        {/* SWAP TARGET BANNER */}
+        {isSwapMode && swappingExercise && (
+          <View style={styles.swapBannerContainer}>
+            <View style={styles.swapBannerBadge}>
+              <Text style={styles.swapBannerBadgeText}>REPLACING</Text>
+            </View>
+            <View style={styles.swapBannerTextWrap}>
+              <Text style={styles.swapBannerExerciseName}>
+                {swappingExercise.name}
+              </Text>
+              <Text style={styles.swapBannerHint}>
+                Pick any movement below from our verified exercise library.
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* SEARCH BAR */}
         <View style={styles.searchBarContainer}>
@@ -436,6 +496,50 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.textMuted,
     textAlign: 'center',
+  },
+  currentExerciseCard: {
+    opacity: 0.55,
+    borderWidth: 1,
+    borderColor: 'rgba(200, 70, 99, 0.4)',
+    backgroundColor: 'rgba(31, 17, 36, 0.5)',
+  },
+  swapSelectBtn: {
+    backgroundColor: Colors.secondary || '#913D59',
+  },
+  swapBannerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(200, 70, 99, 0.12)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(200, 70, 99, 0.25)',
+    gap: 12,
+  },
+  swapBannerBadge: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  swapBannerBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    letterSpacing: 0.6,
+  },
+  swapBannerTextWrap: {
+    flex: 1,
+  },
+  swapBannerExerciseName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  swapBannerHint: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
 });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,8 @@ import {
   ScrollView,
   StatusBar,
   ActivityIndicator,
-  Alert,
+  Animated,
+  Easing,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../theme/colors';
@@ -16,6 +17,8 @@ import { downloadWorkoutPdf } from '../utils/generateWorkoutPdf';
 import ExerciseIllustrationSvg from '../components/ExerciseIllustrationSvg';
 import EditPrescriptionModal from '../components/EditPrescriptionModal';
 import AddExerciseModal from '../components/AddExerciseModal';
+import ConfirmModal from '../components/ConfirmModal';
+import { WGER_EXERCISE_CATALOG } from '../data/wgerExerciseCatalog.js';
 
 const SWAP_REASONS = [
   { id: 'equipment_busy', label: 'Equipment Busy', sub: 'Swap for today only' },
@@ -42,6 +45,7 @@ export default function RoutineScreen({ navigation }) {
 
   const toggleLikeExercise = useWorkoutStore((state) => state.toggleLikeExercise);
   const swapExerciseWithFeedback = useWorkoutStore((state) => state.swapExerciseWithFeedback);
+  const replaceExerciseWithCatalogItem = useWorkoutStore((state) => state.replaceExerciseWithCatalogItem);
   const setIntensityRating = useWorkoutStore((state) => state.setIntensityRating);
   const updateExercisePrescription = useWorkoutStore((state) => state.updateExercisePrescription);
   const deleteExercise = useWorkoutStore((state) => state.deleteExercise);
@@ -153,11 +157,92 @@ export default function RoutineScreen({ navigation }) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [openSwapCardId, setOpenSwapCardId] = useState(null);
   const [editingModalData, setEditingModalData] = useState(null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [confirmModalConfig, setConfirmModalConfig] = useState(null);
+  const [catalogModalConfig, setCatalogModalConfig] = useState({
+    visible: false,
+    mode: 'add',
+    exerciseIndex: null,
+    swappingExercise: null,
+  });
+
+  // Innovative animations
+  const dayFadeAnim = useRef(new Animated.Value(1)).current;
+  const heartPopAnim = useRef(new Animated.Value(1)).current;
 
   const likedIds = feedback?.likedExerciseIds || [];
   const dislikedIds = feedback?.dislikedExerciseIds || [];
   const intensityRating = feedback?.intensityRating || 'optimal';
+
+  const handleDaySelect = (index) => {
+    if (index === activeDayIndex) return;
+    setOpenSwapCardId(null);
+    Animated.sequence([
+      Animated.timing(dayFadeAnim, {
+        toValue: 0.15,
+        duration: 90,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(dayFadeAnim, {
+        toValue: 1,
+        duration: 200,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+    ]).start();
+    setActiveDayIndex(index);
+  };
+
+  const handleLikeToggle = (catalogKey) => {
+    Animated.sequence([
+      Animated.timing(heartPopAnim, {
+        toValue: 1.35,
+        duration: 100,
+        easing: Easing.out(Easing.back(2)),
+        useNativeDriver: true,
+      }),
+      Animated.spring(heartPopAnim, {
+        toValue: 1,
+        friction: 4,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    toggleLikeExercise(catalogKey);
+  };
+
+  const handleDirectSubstitutionTap = (exerciseIndex, exercise, subName) => {
+    const directMatch = WGER_EXERCISE_CATALOG.find(
+      (item) => item.name.toLowerCase() === subName.toLowerCase()
+    );
+    if (directMatch) {
+      setConfirmModalConfig({
+        title: 'Swap Exercise?',
+        message: `Replace "${exercise.name}" with "${directMatch.name}"?`,
+        confirmText: 'Swap Movement',
+        cancelText: 'Cancel',
+        isDestructive: false,
+        icon: '⇄',
+        onConfirm: () => {
+          replaceExerciseWithCatalogItem({
+            dayIndex: activeDayIndex,
+            exerciseIndex,
+            catalogExercise: directMatch,
+            keepPrescription: true,
+          });
+          setConfirmModalConfig(null);
+        },
+        onCancel: () => setConfirmModalConfig(null),
+      });
+    } else {
+      setCatalogModalConfig({
+        visible: true,
+        mode: 'swap',
+        exerciseIndex,
+        swappingExercise: exercise,
+      });
+    }
+  };
 
   const handleDownloadPdf = async () => {
     try {
@@ -170,10 +255,16 @@ export default function RoutineScreen({ navigation }) {
       });
     } catch (error) {
       console.error('Failed to generate or download workout PDF:', error);
-      Alert.alert(
-        'Download Error',
-        'Unable to generate your workout program PDF. Please try again.'
-      );
+      setConfirmModalConfig({
+        title: 'Download Error',
+        message: 'Unable to generate your workout program PDF. Please try again.',
+        confirmText: 'Got It',
+        cancelText: null,
+        isDestructive: false,
+        icon: '!',
+        onConfirm: () => setConfirmModalConfig(null),
+        onCancel: () => setConfirmModalConfig(null),
+      });
     } finally {
       setIsDownloading(false);
     }
@@ -189,42 +280,41 @@ export default function RoutineScreen({ navigation }) {
   };
 
   const handleDeleteExercise = (exerciseIndex, exerciseName) => {
-    Alert.alert(
-      'Remove Exercise?',
-      `Remove "${exerciseName}" from ${activeDay.dayLabel || 'this workout'}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            deleteExercise({
-              dayIndex: activeDayIndex,
-              exerciseIndex,
-            });
-            if (openSwapCardId) setOpenSwapCardId(null);
-          },
-        },
-      ]
-    );
+    setConfirmModalConfig({
+      title: 'Remove Exercise?',
+      message: `Remove "${exerciseName}" from ${activeDay.dayLabel || 'this workout'}?`,
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      isDestructive: true,
+      icon: '✕',
+      onConfirm: () => {
+        deleteExercise({
+          dayIndex: activeDayIndex,
+          exerciseIndex,
+        });
+        if (openSwapCardId) setOpenSwapCardId(null);
+        setConfirmModalConfig(null);
+      },
+      onCancel: () => setConfirmModalConfig(null),
+    });
   };
 
   const handleResetToOriginal = () => {
-    Alert.alert(
-      'Reset to AI Blueprint?',
-      'All your manual adjustments, added movements, reordered exercises, and custom sets/reps will be reverted back to the initial AI generation.',
-      [
-        { text: 'Keep Edits', style: 'cancel' },
-        {
-          text: 'Reset to Original',
-          style: 'destructive',
-          onPress: () => {
-            resetToOriginalRoutine();
-            setOpenSwapCardId(null);
-          },
-        },
-      ]
-    );
+    setConfirmModalConfig({
+      title: 'Reset to AI Blueprint?',
+      message:
+        'All your manual adjustments, added movements, reordered exercises, and custom sets/reps will be reverted back to the initial AI generation.',
+      confirmText: 'Reset to Original',
+      cancelText: 'Keep Edits',
+      isDestructive: true,
+      icon: '↺',
+      onConfirm: () => {
+        resetToOriginalRoutine();
+        setOpenSwapCardId(null);
+        setConfirmModalConfig(null);
+      },
+      onCancel: () => setConfirmModalConfig(null),
+    });
   };
 
   const activeDay = schedule[activeDayIndex] || schedule[0] || {
@@ -290,7 +380,7 @@ export default function RoutineScreen({ navigation }) {
                 activeOpacity={0.7}
                 onPress={handleResetToOriginal}
               >
-                <Text style={styles.revertBtnText}>↺ Reset to AI Plan</Text>
+                <Text style={styles.revertBtnText}>↺ Reset to original Plan</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -358,10 +448,7 @@ export default function RoutineScreen({ navigation }) {
                   <TouchableOpacity
                     key={day.dayNumber || index}
                     activeOpacity={0.75}
-                    onPress={() => {
-                      setActiveDayIndex(index);
-                      setOpenSwapCardId(null);
-                    }}
+                    onPress={() => handleDaySelect(index)}
                     style={[
                       styles.dayTab,
                       isActive ? styles.dayTabActive : styles.dayTabInactive,
@@ -438,7 +525,16 @@ export default function RoutineScreen({ navigation }) {
         )}
 
         {/* Exercise Cards List */}
-        <View style={styles.exerciseList}>
+        <Animated.View style={[styles.exerciseList, { opacity: dayFadeAnim }]}>
+          {(!activeDay.exercises || activeDay.exercises.length === 0) && (
+            <View style={styles.emptyExercisesCard}>
+              <Text style={styles.emptyExercisesTitle}>No exercises in this session</Text>
+              <Text style={styles.emptyExercisesSub}>
+                Use "＋ Add Exercise to Day" below to add movements from the catalog, or tap "↺ Reset to original Plan" at the top to restore the generated blueprint.
+              </Text>
+            </View>
+          )}
+
           {(activeDay.exercises || []).map((exercise, index) => {
             const catalogKey = exercise.catalogId || exercise.id;
             const isLiked = likedIds.includes(catalogKey);
@@ -470,6 +566,9 @@ export default function RoutineScreen({ navigation }) {
                           toIndex: index - 1,
                         })
                       }
+                      accessibilityRole="button"
+                      accessibilityLabel="Move exercise up"
+                      hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                     >
                       <Text style={[styles.reorderArrowText, index === 0 && styles.reorderArrowTextDisabled]}>
                         ▲
@@ -494,6 +593,9 @@ export default function RoutineScreen({ navigation }) {
                           toIndex: index + 1,
                         })
                       }
+                      accessibilityRole="button"
+                      accessibilityLabel="Move exercise down"
+                      hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                     >
                       <Text
                         style={[
@@ -533,20 +635,22 @@ export default function RoutineScreen({ navigation }) {
                   <View style={styles.feedbackButtonsRow}>
                     <TouchableOpacity
                       activeOpacity={0.7}
-                      onPress={() => toggleLikeExercise(catalogKey)}
+                      onPress={() => handleLikeToggle(catalogKey)}
                       style={[
                         styles.iconActionBtn,
                         isLiked && styles.iconActionBtnLiked,
                       ]}
                     >
-                      <Text
-                        style={[
-                          styles.iconActionText,
-                          isLiked && styles.iconActionTextLiked,
-                        ]}
-                      >
-                        {isLiked ? '♥' : '♡'}
-                      </Text>
+                      <Animated.View style={{ transform: [{ scale: heartPopAnim }] }}>
+                        <Text
+                          style={[
+                            styles.iconActionText,
+                            isLiked && styles.iconActionTextLiked,
+                          ]}
+                        >
+                          {isLiked ? '♥' : '♡'}
+                        </Text>
+                      </Animated.View>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -580,6 +684,9 @@ export default function RoutineScreen({ navigation }) {
                       activeOpacity={0.7}
                       onPress={() => handleDeleteExercise(index, exercise.name)}
                       style={styles.deleteActionBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove ${exercise.name}`}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                       <Text style={styles.deleteActionText}>✕</Text>
                     </TouchableOpacity>
@@ -589,6 +696,38 @@ export default function RoutineScreen({ navigation }) {
                 {/* Inline Feedback Swap Reason Drawer */}
                 {isSwapDrawerOpen && (
                   <View style={styles.swapReasonDrawer}>
+                    {/* OPTION 1: CHOOSE DIRECTLY FROM LIBRARY */}
+                    <TouchableOpacity
+                      style={styles.chooseFromLibraryBtn}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        setOpenSwapCardId(null);
+                        setCatalogModalConfig({
+                          visible: true,
+                          mode: 'swap',
+                          exerciseIndex: index,
+                          swappingExercise: exercise,
+                        });
+                      }}
+                    >
+                      <View style={styles.chooseLibraryIconWrap}>
+                        <Text style={styles.chooseLibraryIcon}>🔍</Text>
+                      </View>
+                      <View style={styles.chooseLibraryTextWrap}>
+                        <Text style={styles.chooseLibraryTitle}>Choose from Exercise Library</Text>
+                        <Text style={styles.chooseLibrarySubtitle}>
+                          Browse 100+ exercises to select your preferred replacement
+                        </Text>
+                      </View>
+                      <Text style={styles.chooseLibraryArrow}>➔</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.swapDividerRow}>
+                      <View style={styles.swapDividerLine} />
+                      <Text style={styles.swapDividerText}>OR INSTANT AI AUTO-SWAP</Text>
+                      <View style={styles.swapDividerLine} />
+                    </View>
+
                     <Text style={styles.swapDrawerTitle}>
                       Why swap this movement? (Trains your recommendation profile)
                     </Text>
@@ -669,9 +808,14 @@ export default function RoutineScreen({ navigation }) {
                     <Text style={styles.subsHeader}>DIRECT SUBSTITUTIONS</Text>
                     <View style={styles.subsRow}>
                       {exercise.substitutions.map((sub, sIdx) => (
-                        <View key={sIdx} style={styles.subTag}>
-                          <Text style={styles.subTagText}>{sub}</Text>
-                        </View>
+                        <TouchableOpacity
+                          key={sIdx}
+                          style={styles.subTag}
+                          activeOpacity={0.7}
+                          onPress={() => handleDirectSubstitutionTap(index, exercise, sub)}
+                        >
+                          <Text style={styles.subTagText}>⇄ {sub}</Text>
+                        </TouchableOpacity>
                       ))}
                     </View>
                   </View>
@@ -679,13 +823,20 @@ export default function RoutineScreen({ navigation }) {
               </View>
             );
           })}
-        </View>
+        </Animated.View>
 
         {/* Add Exercise to Day Button */}
         <TouchableOpacity
           style={styles.addExerciseToDayButton}
           activeOpacity={0.8}
-          onPress={() => setIsAddModalOpen(true)}
+          onPress={() =>
+            setCatalogModalConfig({
+              visible: true,
+              mode: 'add',
+              exerciseIndex: null,
+              swappingExercise: null,
+            })
+          }
         >
           <View style={styles.addExerciseIconCircle}>
             <Text style={styles.addExerciseIconPlus}>＋</Text>
@@ -739,6 +890,16 @@ export default function RoutineScreen({ navigation }) {
         visible={!!editingModalData}
         exercise={editingModalData?.exercise}
         onClose={() => setEditingModalData(null)}
+        onRequestSwap={(exercise) => {
+          const idx = editingModalData.exerciseIndex;
+          setEditingModalData(null);
+          setCatalogModalConfig({
+            visible: true,
+            mode: 'swap',
+            exerciseIndex: idx,
+            swappingExercise: exercise,
+          });
+        }}
         onSave={(updates) => {
           if (editingModalData) {
             updateExercisePrescription({
@@ -750,20 +911,44 @@ export default function RoutineScreen({ navigation }) {
         }}
       />
 
-      {/* Add Exercise Modal */}
+      {/* Exercise Catalog Modal (Handles both Adding & Swapping/Replacing) */}
       <AddExerciseModal
-        visible={isAddModalOpen}
+        visible={catalogModalConfig.visible}
+        mode={catalogModalConfig.mode}
+        swappingExercise={catalogModalConfig.swappingExercise}
         dayLabel={activeDay.dayLabel}
         existingCatalogIds={(activeDay.exercises || []).map(
           (e) => e.catalogId || e.id
         )}
-        onClose={() => setIsAddModalOpen(false)}
-        onAddExercise={(catalogExercise) => {
-          addExerciseToDay({
-            dayIndex: activeDayIndex,
-            catalogExercise,
-          });
+        onClose={() => setCatalogModalConfig((prev) => ({ ...prev, visible: false }))}
+        onSelectExercise={(catalogExercise) => {
+          if (catalogModalConfig.mode === 'swap' && catalogModalConfig.exerciseIndex !== null) {
+            replaceExerciseWithCatalogItem({
+              dayIndex: activeDayIndex,
+              exerciseIndex: catalogModalConfig.exerciseIndex,
+              catalogExercise,
+              keepPrescription: true,
+            });
+          } else {
+            addExerciseToDay({
+              dayIndex: activeDayIndex,
+              catalogExercise,
+            });
+          }
         }}
+      />
+
+      {/* Confirmation & Alert Modal */}
+      <ConfirmModal
+        visible={!!confirmModalConfig}
+        title={confirmModalConfig?.title}
+        message={confirmModalConfig?.message}
+        confirmText={confirmModalConfig?.confirmText}
+        cancelText={confirmModalConfig?.cancelText}
+        isDestructive={confirmModalConfig?.isDestructive}
+        icon={confirmModalConfig?.icon}
+        onConfirm={confirmModalConfig?.onConfirm}
+        onCancel={confirmModalConfig?.onCancel}
       />
     </View>
   );
@@ -1075,6 +1260,28 @@ const styles = StyleSheet.create({
   exerciseList: {
     gap: 14,
   },
+  emptyExercisesCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  emptyExercisesTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  emptyExercisesSub: {
+    fontSize: 13,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
   exerciseCard: {
     backgroundColor: Colors.surface,
     borderRadius: 16,
@@ -1299,6 +1506,63 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.textMuted,
     marginTop: 2,
+  },
+  chooseFromLibraryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(200, 70, 99, 0.16)',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    gap: 10,
+  },
+  chooseLibraryIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.primarySubtle,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chooseLibraryIcon: {
+    fontSize: 13,
+  },
+  chooseLibraryTextWrap: {
+    flex: 1,
+  },
+  chooseLibraryTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  chooseLibrarySubtitle: {
+    fontSize: 10,
+    color: Colors.textSecondary,
+    marginTop: 1,
+  },
+  chooseLibraryArrow: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: Colors.primary,
+  },
+  swapDividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 6,
+    gap: 8,
+  },
+  swapDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border,
+  },
+  swapDividerText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: Colors.textMuted,
+    letterSpacing: 0.8,
   },
   prescriptionRow: {
     flexDirection: 'row',

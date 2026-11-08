@@ -392,6 +392,84 @@ export const useWorkoutStore = create(
     }),
 
   /**
+   * Replaces an existing exercise in a day with an exercise chosen from the catalog.
+   * Supports keeping customized sets/reps or adopting the hydrated prescription.
+   */
+  replaceExerciseWithCatalogItem: ({
+    dayIndex,
+    exerciseIndex,
+    catalogExercise,
+    keepPrescription = true,
+  }) =>
+    set((state) => {
+      const routine = state.generatedRoutine;
+      if (!routine || !routine.schedule || !routine.schedule[dayIndex]) return state;
+      const day = routine.schedule[dayIndex];
+      if (!day.exercises || !day.exercises[exerciseIndex]) return state;
+      const currentEx = day.exercises[exerciseIndex];
+
+      const primaryGoal = state.userProfile?.primaryGoal || 'Hypertrophy / Muscle';
+      const intensityRating = state.feedback?.intensityRating || 'optimal';
+      const dayNumber = day.dayNumber || dayIndex + 1;
+
+      const hydrated = hydrateExerciseForSchedule(
+        catalogExercise,
+        dayNumber,
+        exerciseIndex,
+        primaryGoal,
+        intensityRating
+      );
+
+      const targetCatalogId = currentEx.catalogId || currentEx.id;
+      const newSwapEntry = {
+        fromId: targetCatalogId,
+        fromName: currentEx.name,
+        toId: catalogExercise.id,
+        toName: catalogExercise.name,
+        reason: 'user_selected',
+        timestamp: Date.now(),
+      };
+
+      const updatedExercises = [...day.exercises];
+      updatedExercises[exerciseIndex] = {
+        ...hydrated,
+        id: `ex-${dayNumber}-${exerciseIndex + 1}-${catalogExercise.id}`,
+        sets:
+          keepPrescription && currentEx.sets !== undefined
+            ? Number(currentEx.sets)
+            : hydrated.sets,
+        reps:
+          keepPrescription && currentEx.reps !== undefined
+            ? String(currentEx.reps)
+            : hydrated.reps,
+        restSeconds:
+          keepPrescription && currentEx.restSeconds !== undefined
+            ? Number(currentEx.restSeconds)
+            : hydrated.restSeconds,
+        swappedFrom: currentEx.name,
+        swapReason: 'user_selected',
+      };
+
+      const updatedSchedule = [...routine.schedule];
+      updatedSchedule[dayIndex] = {
+        ...day,
+        exercises: updatedExercises,
+      };
+
+      return {
+        isEdited: true,
+        feedback: {
+          ...state.feedback,
+          swapHistory: [newSwapEntry, ...(state.feedback.swapHistory || []).slice(0, 19)],
+        },
+        generatedRoutine: {
+          ...routine,
+          schedule: updatedSchedule,
+        },
+      };
+    }),
+
+  /**
    * Reorders exercises within a day (moves item from fromIndex to toIndex).
    */
   reorderExercise: ({ dayIndex, fromIndex, toIndex }) =>

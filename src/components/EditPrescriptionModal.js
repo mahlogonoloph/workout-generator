@@ -29,6 +29,7 @@ export default function EditPrescriptionModal({
   exercise,
   onClose,
   onSave,
+  onRequestSwap,
 }) {
   const [sets, setSets] = useState(3);
   const [reps, setReps] = useState('8-12');
@@ -96,6 +97,29 @@ export default function EditPrescriptionModal({
                 style={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
               >
+                {/* SWAP MOVEMENT FROM LIBRARY SHORTCUT */}
+                {onRequestSwap && (
+                  <TouchableOpacity
+                    style={styles.swapLibraryBanner}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      onClose();
+                      onRequestSwap(exercise);
+                    }}
+                  >
+                    <View style={styles.swapLibraryIconCircle}>
+                      <Text style={styles.swapLibraryIcon}>⇄</Text>
+                    </View>
+                    <View style={styles.swapLibraryTextWrap}>
+                      <Text style={styles.swapLibraryTitle}>Swap with Exercise from Library</Text>
+                      <Text style={styles.swapLibrarySubtitle}>
+                        Choose any movement from 100+ wger exercises
+                      </Text>
+                    </View>
+                    <Text style={styles.swapLibraryArrow}>➔</Text>
+                  </TouchableOpacity>
+                )}
+
                 {/* SETS CONTROL */}
                 <View style={styles.section}>
                   <View style={styles.sectionTitleRow}>
@@ -537,6 +561,50 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: Colors.textPrimary,
     letterSpacing: 0.5,
+  },
+  swapLibraryBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(200, 70, 99, 0.12)',
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(200, 70, 99, 0.3)',
+    gap: 12,
+  },
+  swapLibraryIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primarySubtle,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  swapLibraryIcon: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  swapLibraryTextWrap: {
+    flex: 1,
+  },
+  swapLibraryTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: 2,
+  },
+  swapLibrarySubtitle: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+  },
+  swapLibraryArrow: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.primary,
   },
 });
 
