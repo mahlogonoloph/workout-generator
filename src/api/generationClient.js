@@ -38,8 +38,8 @@ export function filterCandidateExercises({
     return !stresses.some((stress) => normalizedExclusions.includes(stress));
   });
 
-  // Fallback to location pool if strict filtering left 0 exercises
-  return safePool.length > 0 ? safePool : poolToFilter;
+  // Return safe exercises only. Under NO circumstances return poolToFilter when safePool is empty!
+  return safePool;
 }
 
 /**
@@ -224,8 +224,9 @@ export function findReplacementExercise({
 
   const excludedToday = new Set([...existingDayCatalogIds, currentExercise.catalogId]);
 
-  const scored = candidates
-    .filter((ex) => !excludedToday.has(ex.id))
+  const unusedCandidates = candidates.filter((ex) => !excludedToday.has(ex.id));
+
+  const scored = unusedCandidates
     .map((ex) => {
       let score = 0;
 
@@ -265,7 +266,32 @@ export function findReplacementExercise({
     })
     .sort((a, b) => b.score - a.score);
 
-  const chosen = scored[0]?.ex || candidates[0] || WGER_EXERCISE_CATALOG[0];
+  let chosen = scored[0]?.ex;
+
+  // If no unused candidate found, pick any safe candidate from candidates not identical to current
+  if (!chosen) {
+    chosen = candidates.find((ex) => ex.id !== currentExercise.catalogId) || candidates[0];
+  }
+
+  // If candidates was empty (e.g. all safe exercises in location were disliked),
+  // fallback to safe pool ignoring disliked exercises, but strictly obeying exclusionZones!
+  if (!chosen) {
+    const safePool = filterCandidateExercises({
+      location,
+      exclusionZones,
+      dislikedExerciseIds: [],
+    });
+    chosen =
+      safePool.find((ex) => !excludedToday.has(ex.id)) ||
+      safePool.find((ex) => ex.id !== currentExercise.catalogId) ||
+      safePool[0] ||
+      null;
+  }
+
+  // If no safe exercise exists, return null to avoid injecting contraindicated movements
+  if (!chosen) {
+    return null;
+  }
 
   return hydrateExerciseForSchedule(
     chosen,
@@ -312,6 +338,19 @@ export async function generateWorkout(storeState) {
   const exerciseCountPerDay =
     durationMinutes >= 75 ? 6 : durationMinutes >= 60 ? 5 : durationMinutes >= 45 ? 4 : 3;
 
+  const safetyErrorMessage = `We could not find safe exercises for environment "${location}" that avoid joint stress on: ${exclusionZones.join(', ')}. Please adjust your exclusions or choose another location.`;
+
+  // Explicit safety check: throw if safePool is empty or cannot satisfy minimum exercises (at least 2 per day)
+  if (safePool.length === 0 || safePool.length < 2) {
+    throw new Error(safetyErrorMessage);
+  }
+
+  // If safePool.length is less than exerciseCountPerDay, only use safe exercises available in safePool
+  const effectiveExerciseCount = Math.min(exerciseCountPerDay, safePool.length);
+  if (effectiveExerciseCount < 2) {
+    throw new Error(safetyErrorMessage);
+  }
+
   // Map focus areas to bonus movement pattern if 6 exercises requested
   const focusPatternMap = {
     Chest: 'horizontal_push',
@@ -333,18 +372,21 @@ export async function generateWorkout(storeState) {
     const patternsForDay = [...template.patterns];
 
     // If session is 75m (6 exercises) or user has a focus area, append a targeted pattern
-    if (patternsForDay.length < exerciseCountPerDay) {
+    if (patternsForDay.length < effectiveExerciseCount) {
       const focusArea = focusAreas[d % Math.max(1, focusAreas.length)];
       const bonusPattern = focusPatternMap[focusArea] || 'core_stability';
       patternsForDay.push(bonusPattern);
     }
 
-    const activePatterns = patternsForDay.slice(0, exerciseCountPerDay);
+    const activePatterns = patternsForDay.slice(0, effectiveExerciseCount);
     const usedInDaySet = new Set();
     const dayExercises = [];
 
     activePatterns.forEach((pattern, slotIdx) => {
-      const ranked = safePool
+      // Pick only from safePool candidates not already in usedInDaySet
+      const availableSafe = safePool.filter((candidate) => !usedInDaySet.has(candidate.id));
+
+      const ranked = availableSafe
         .map((candidate) => ({
           candidate,
           score: scoreCandidate(candidate, {
@@ -359,7 +401,7 @@ export async function generateWorkout(storeState) {
         }))
         .sort((a, b) => b.score - a.score);
 
-      const selected = ranked[0]?.candidate || safePool[slotIdx % safePool.length];
+      const selected = ranked[0]?.candidate || availableSafe[0] || null;
       if (selected) {
         usedInDaySet.add(selected.id);
         usedInWeekCounts.set(selected.id, (usedInWeekCounts.get(selected.id) || 0) + 1);
@@ -368,6 +410,10 @@ export async function generateWorkout(storeState) {
         );
       }
     });
+
+    if (dayExercises.length < 2) {
+      throw new Error(safetyErrorMessage);
+    }
 
     schedule.push({
       dayNumber: dayIndex,

@@ -8,10 +8,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "TennisClub.workoutgenerator"
+      "bundleIdentifier": "com.tennisclub.workoutgenerator"
     },
     "android": {
-      "package": "TennisClub.workoutgenerator",
+      "package": "com.tennisclub.workoutgenerator",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",

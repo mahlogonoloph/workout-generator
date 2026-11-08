@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   generateWorkout as apiGenerateWorkout,
   findReplacementExercise,
@@ -35,7 +37,9 @@ const initialFeedback = {
   preferSimplerMovements: false,
 };
 
-export const useWorkoutStore = create((set, get) => ({
+export const useWorkoutStore = create(
+  persist(
+    (set, get) => ({
   userProfile: { ...initialProfile },
   logistics: { ...initialLogistics },
   targeting: { ...initialTargeting },
@@ -229,6 +233,10 @@ export const useWorkoutStore = create((set, get) => ({
         existingDayCatalogIds,
         reason,
       });
+
+      if (!replacement) {
+        return state;
+      }
 
       // Update feedback memory depending on reason
       const shouldBanPermanently =
@@ -516,13 +524,32 @@ export const useWorkoutStore = create((set, get) => ({
         isGenerating: false,
         error: null,
       });
-      return plan;
+      return { success: true, plan };
     } catch (err) {
-      const errorMessage = err?.message || 'Failed to generate workout plan.';
-      set({ error: errorMessage, isGenerating: false });
-      throw err;
+      const errorMessage = err?.message || 'Failed to generate a safe workout plan.';
+      set({ isGenerating: false, error: errorMessage });
+      return { success: false, error: err?.message || errorMessage };
     }
   },
-}));
+
+  generateRoutine: async () => {
+    return get().generateWorkoutPlan();
+  },
+}),
+    {
+      name: 'fig-workout-store',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        userProfile: state.userProfile,
+        logistics: state.logistics,
+        targeting: state.targeting,
+        feedback: state.feedback,
+        generatedRoutine: state.generatedRoutine,
+        originalGeneratedRoutine: state.originalGeneratedRoutine,
+        isEdited: state.isEdited,
+      }),
+    }
+  )
+);
 
 export default useWorkoutStore;

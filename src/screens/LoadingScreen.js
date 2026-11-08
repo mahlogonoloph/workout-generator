@@ -7,6 +7,7 @@ import {
   Easing,
   StatusBar,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../theme/colors';
@@ -93,9 +94,29 @@ export default function LoadingScreen({ navigation }) {
 
     // 3. Trigger plan synthesis
     let isMounted = true;
+
+    const handleSafetyError = (errorMessage) => {
+      if (!isMounted) return;
+      clearInterval(stageTimer);
+      Alert.alert(
+        'Safety Limitation',
+        errorMessage || 'Unable to generate a safe routine with these constraints...',
+        [
+          {
+            text: 'Adjust Constraints',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+    };
+
     generateWorkoutPlan()
-      .then(() => {
+      .then((res) => {
         if (!isMounted) return;
+        if (res && res.success === false) {
+          handleSafetyError(res.error);
+          return;
+        }
         setProgressPercent(100);
         Animated.timing(progressAnim, {
           toValue: 1,
@@ -104,12 +125,15 @@ export default function LoadingScreen({ navigation }) {
           useNativeDriver: false,
         }).start(() => {
           setTimeout(() => {
-            navigation.replace('Routine');
+            if (isMounted) {
+              navigation.replace('Routine');
+            }
           }, 350);
         });
       })
       .catch((err) => {
         console.warn('Synthesis error:', err);
+        handleSafetyError(err?.message);
       });
 
     return () => {
