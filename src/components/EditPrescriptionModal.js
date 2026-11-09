@@ -22,6 +22,15 @@ const REP_PRESETS = [
   { id: '15-20', label: '15-20', tag: 'Endurance' },
 ];
 
+const TIME_PRESETS = [
+  { id: '30s', label: '30s', tag: 'Neural/Core' },
+  { id: '30-45s', label: '30-45s', tag: 'Stability' },
+  { id: '45-60s', label: '45-60s', tag: 'Hypertrophy' },
+  { id: '60s', label: '60s', tag: 'Endurance' },
+  { id: '60-90s', label: '60-90s', tag: 'Stamina' },
+  { id: '30-45s / side', label: '30-45s/side', tag: 'Unilateral' },
+];
+
 const REST_PRESETS = [30, 45, 60, 75, 90, 105, 120, 150, 180];
 
 export default function EditPrescriptionModal({
@@ -35,11 +44,13 @@ export default function EditPrescriptionModal({
   const [reps, setReps] = useState('8-12');
   const [restSeconds, setRestSeconds] = useState(90);
 
+  const isTimeBased = exercise?.prescriptionType === 'time';
+
   // Sync state when opened with a new exercise
   useEffect(() => {
     if (exercise) {
       setSets(Number(exercise.sets) || 3);
-      setReps(String(exercise.reps || '8-12'));
+      setReps(String(exercise.reps || (exercise.prescriptionType === 'time' ? '30-45s' : '8-12')));
       setRestSeconds(Number(exercise.restSeconds) || 90);
     }
   }, [exercise, visible]);
@@ -57,7 +68,7 @@ export default function EditPrescriptionModal({
   const handleSave = () => {
     onSave({
       sets,
-      reps: reps.trim() || '8-12',
+      reps: reps.trim() || (isTimeBased ? '30-45s' : '8-12'),
       restSeconds,
     });
     onClose();
@@ -150,14 +161,18 @@ export default function EditPrescriptionModal({
                   </View>
                 </View>
 
-                {/* REPS CONTROL */}
+                {/* REPS / HOLD DURATION CONTROL */}
                 <View style={styles.section}>
                   <View style={styles.sectionTitleRow}>
-                    <Text style={styles.sectionTitle}>Target Rep Range</Text>
-                    <Text style={styles.sectionValueHighlight}>{reps} Reps</Text>
+                    <Text style={styles.sectionTitle}>
+                      {isTimeBased ? 'Target Hold Duration' : 'Target Rep Range'}
+                    </Text>
+                    <Text style={styles.sectionValueHighlight}>
+                      {isTimeBased ? reps : `${reps} Reps`}
+                    </Text>
                   </View>
                   <View style={styles.presetsGrid}>
-                    {REP_PRESETS.map((preset) => {
+                    {(isTimeBased ? TIME_PRESETS : REP_PRESETS).map((preset) => {
                       const isSelected = reps === preset.id;
                       return (
                         <TouchableOpacity
@@ -212,6 +227,12 @@ export default function EditPrescriptionModal({
                       {restSeconds}s ({Math.floor(restSeconds / 60)}m {restSeconds % 60}s)
                     </Text>
                   </View>
+
+                  <Text style={styles.restRecommendationHint}>
+                    {exercise.tier === 'compound'
+                      ? 'Recommended: 120–180s for multi-joint compounds'
+                      : 'Recommended: 60–90s for isolation/accessories'}
+                  </Text>
 
                   <View style={styles.restPresetsScroll}>
                     {REST_PRESETS.map((seconds) => {
@@ -605,6 +626,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: Colors.primary,
+  },
+  restRecommendationHint: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.textMuted,
+    marginTop: -4,
+    marginBottom: 10,
   },
 });
 

@@ -33,6 +33,9 @@ export default function LoadingScreen({ navigation }) {
 
   const [stageIndex, setStageIndex] = useState(0);
   const [progressPercent, setProgressPercent] = useState(20);
+  const synthesisReadyRef = useRef(false);
+  const skipRequestedRef = useRef(false);
+  const hasNavigatedRef = useRef(false);
 
   // Smooth breathing animations
   const pulseScale = useRef(new Animated.Value(1)).current;
@@ -189,6 +192,12 @@ export default function LoadingScreen({ navigation }) {
           handleSafetyError(res.error);
           return;
         }
+        synthesisReadyRef.current = true;
+        if (skipRequestedRef.current && !hasNavigatedRef.current) {
+          hasNavigatedRef.current = true;
+          navigation.replace('Routine');
+          return;
+        }
         setProgressPercent(100);
         Animated.timing(progressAnim, {
           toValue: 1,
@@ -197,7 +206,8 @@ export default function LoadingScreen({ navigation }) {
           useNativeDriver: false,
         }).start(() => {
           setTimeout(() => {
-            if (isMounted) {
+            if (isMounted && !hasNavigatedRef.current) {
+              hasNavigatedRef.current = true;
               navigation.replace('Routine');
             }
           }, 350);
@@ -347,7 +357,13 @@ export default function LoadingScreen({ navigation }) {
         <TouchableOpacity
           style={styles.skipAction}
           activeOpacity={0.7}
-          onPress={() => navigation.replace('Routine')}
+          onPress={() => {
+            skipRequestedRef.current = true;
+            if (synthesisReadyRef.current && !hasNavigatedRef.current) {
+              hasNavigatedRef.current = true;
+              navigation.replace('Routine');
+            }
+          }}
         >
           <Text style={styles.skipActionText}>Skip to Results →</Text>
         </TouchableOpacity>

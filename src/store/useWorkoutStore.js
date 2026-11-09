@@ -310,6 +310,7 @@ export const useWorkoutStore = create(
         sets: sets !== undefined ? Number(sets) : currentEx.sets,
         reps: reps !== undefined ? String(reps) : currentEx.reps,
         restSeconds: restSeconds !== undefined ? Number(restSeconds) : currentEx.restSeconds,
+        isCustomPrescription: true,
       };
 
       const updatedSchedule = [...routine.schedule];
@@ -365,6 +366,10 @@ export const useWorkoutStore = create(
 
       const primaryGoal = state.userProfile?.primaryGoal || 'Hypertrophy / Muscle';
       const intensityRating = state.feedback?.intensityRating || 'optimal';
+      const location = state.logistics?.location || 'Commercial Gym';
+      const exclusionZones = state.targeting?.exclusionZones || [];
+      const dislikedExerciseIds = state.feedback?.dislikedExerciseIds || [];
+      const existingDayCatalogIds = currentExercises.map((e) => e.catalogId || e.id);
       const dayNumber = day.dayNumber || dayIndex + 1;
       const slotIndex = currentExercises.length;
 
@@ -373,7 +378,13 @@ export const useWorkoutStore = create(
         dayNumber,
         slotIndex,
         primaryGoal,
-        intensityRating
+        intensityRating,
+        {
+          location,
+          exclusionZones,
+          dislikedExerciseIds,
+          existingDayCatalogIds,
+        }
       );
 
       const updatedSchedule = [...routine.schedule];
@@ -410,6 +421,10 @@ export const useWorkoutStore = create(
 
       const primaryGoal = state.userProfile?.primaryGoal || 'Hypertrophy / Muscle';
       const intensityRating = state.feedback?.intensityRating || 'optimal';
+      const location = state.logistics?.location || 'Commercial Gym';
+      const exclusionZones = state.targeting?.exclusionZones || [];
+      const dislikedExerciseIds = state.feedback?.dislikedExerciseIds || [];
+      const existingDayCatalogIds = day.exercises.map((e) => e.catalogId || e.id);
       const dayNumber = day.dayNumber || dayIndex + 1;
 
       const hydrated = hydrateExerciseForSchedule(
@@ -417,7 +432,14 @@ export const useWorkoutStore = create(
         dayNumber,
         exerciseIndex,
         primaryGoal,
-        intensityRating
+        intensityRating,
+        {
+          location,
+          exclusionZones,
+          dislikedExerciseIds,
+          existingDayCatalogIds,
+          isFocusBoosted: Boolean(currentEx.isFocusBoosted),
+        }
       );
 
       const targetCatalogId = currentEx.catalogId || currentEx.id;
@@ -430,6 +452,9 @@ export const useWorkoutStore = create(
         timestamp: Date.now(),
       };
 
+      const samePrescriptionType =
+        (currentEx.prescriptionType || 'reps') === (hydrated.prescriptionType || 'reps');
+
       const updatedExercises = [...day.exercises];
       updatedExercises[exerciseIndex] = {
         ...hydrated,
@@ -439,13 +464,14 @@ export const useWorkoutStore = create(
             ? Number(currentEx.sets)
             : hydrated.sets,
         reps:
-          keepPrescription && currentEx.reps !== undefined
+          keepPrescription && samePrescriptionType && currentEx.reps !== undefined
             ? String(currentEx.reps)
             : hydrated.reps,
         restSeconds:
           keepPrescription && currentEx.restSeconds !== undefined
             ? Number(currentEx.restSeconds)
             : hydrated.restSeconds,
+        isCustomPrescription: Boolean(currentEx.isCustomPrescription && samePrescriptionType),
         swappedFrom: currentEx.name,
         swapReason: 'user_selected',
       };
@@ -536,13 +562,25 @@ export const useWorkoutStore = create(
             const nextPrescription = getPrescription(
               primaryGoal,
               ex.tier || 'compound',
-              intensityRating
+              intensityRating,
+              {
+                exercise: ex,
+                prescriptionType: ex.prescriptionType,
+                isFocusBoosted: Boolean(ex.isFocusBoosted),
+              }
             );
+            if (ex.isCustomPrescription) {
+              return {
+                ...ex,
+                targetRir: nextPrescription.targetRir,
+              };
+            }
             return {
               ...ex,
               sets: nextPrescription.sets,
               reps: nextPrescription.reps,
               restSeconds: nextPrescription.restSeconds,
+              targetRir: nextPrescription.targetRir,
             };
           }),
         }));

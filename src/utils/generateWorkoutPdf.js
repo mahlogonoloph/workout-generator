@@ -2,6 +2,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 import { getExercisePdfSvgMarkup } from '../components/ExerciseIllustrationSvg';
+import { buildPeriodizationPlan, getSafeSubstitutions } from '../api/generationClient';
 
 /**
  * Robust HTML entity sanitization to neutralize XSS and arbitrary HTML injection vectors.
@@ -44,6 +45,10 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
 
   const warmup = routine?.warmupRoutine;
   const schedule = routine?.schedule || [];
+  const periodization = routine?.periodizationPlan || buildPeriodizationPlan(goal, cycleWeeks);
+  const rawExclusionsList = Array.isArray(targeting?.exclusionZones)
+    ? targeting.exclusionZones
+    : [];
 
   const formattedDate = new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -366,6 +371,28 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
       border-radius: 3px;
       margin-right: 3px;
     }
+    .rir-pill {
+      display: inline-block;
+      background: #FDF4EE;
+      border: 1px solid #EBD4C5;
+      color: #7D4F38;
+      font-size: 8px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-right: 3px;
+    }
+    .focus-pill {
+      display: inline-block;
+      background: #EAF4F0;
+      border: 1px solid #CBE0D8;
+      color: #2F6F5E;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-right: 3px;
+    }
     .cue-item {
       font-size: 9.5px;
       color: #564459;
@@ -502,37 +529,155 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
       font-size: 8.5px;
     }
 
-    @media print {
-      @page {
-        size: letter;
-        margin: 12mm 10mm 12mm 10mm;
-      }
-      body {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .periodization-card,
-      .section-card,
-      .exercise-item-group {
-        page-break-inside: avoid;
-        break-inside: avoid;
-      }
-      .day-header {
-        page-break-after: avoid;
-        break-after: avoid;
-      }
-      .day-container {
-        page-break-inside: auto;
-        break-inside: auto;
-      }
-      tr {
-        page-break-inside: avoid;
-        break-inside: avoid;
-      }
+  @media print {
+    @page {
+      size: letter;
+      margin: 12mm 10mm 12mm 10mm;
     }
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      background-color: #FFFFFF !important;
+      padding-bottom: 0 !important;
+    }
+    .no-print-toolbar {
+      display: none !important;
+    }
+    .container {
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      padding: 0 4px !important;
+      margin: 0 auto !important;
+      max-width: 820px !important;
+    }
+    .periodization-card,
+    .section-card,
+    .exercise-item-group {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .day-header {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+    .day-container {
+      page-break-inside: auto;
+      break-inside: auto;
+    }
+    tr {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+  }
+
+  @media screen {
+    body {
+      background-color: #F4EFF2;
+      padding-bottom: 40px;
+    }
+    .container {
+      background-color: #FFFFFF;
+      box-shadow: 0 4px 24px rgba(54, 29, 64, 0.08);
+      border-radius: 8px;
+      padding: 24px 20px;
+      margin: 16px auto 32px auto;
+    }
+    .no-print-toolbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10000;
+      background: #361D40;
+      color: #FAF4F0;
+      padding: 10px 16px;
+      box-shadow: 0 2px 12px rgba(31, 17, 36, 0.25);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    .toolbar-content {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .toolbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .toolbar-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+    .toolbar-badge {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(200, 70, 99, 0.3);
+      color: #FFB3C2;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .toolbar-btn {
+      border: none;
+      border-radius: 6px;
+      padding: 7px 13px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s ease, opacity 0.15s ease;
+    }
+    .toolbar-btn:active {
+      transform: scale(0.97);
+    }
+    .toolbar-btn-print {
+      background: #C84663;
+      color: #FFFFFF;
+    }
+    .toolbar-btn-close {
+      background: rgba(255, 255, 255, 0.15);
+      color: #FFFFFF;
+    }
+    .toolbar-tip {
+      max-width: 820px;
+      margin: 6px auto 0 auto;
+      font-size: 10px;
+      color: #E2CAD4;
+      line-height: 1.3;
+    }
+  }
   </style>
 </head>
 <body>
+  <div class="no-print-toolbar">
+    <div class="toolbar-content">
+      <div class="toolbar-brand">
+        <span class="toolbar-title">${escapeHtml(programName)}</span>
+        <span class="toolbar-badge">8-Week Blueprint</span>
+      </div>
+      <div class="toolbar-actions">
+        <button type="button" class="toolbar-btn toolbar-btn-print" onclick="window.print()">
+          🖨️ Print / Save as PDF
+        </button>
+        <button type="button" class="toolbar-btn toolbar-btn-close" onclick="window.close()">
+          ✕ Close
+        </button>
+      </div>
+    </div>
+    <div class="toolbar-tip">
+      💡 <strong>To save as PDF:</strong> Select <em>"Save as PDF"</em> (Desktop/Android) or tap <em>Share → Print → Pinch / Save to Files</em> (iPhone).
+    </div>
+  </div>
   <div class="container">
     <div class="header">
       <div class="brand-row">
@@ -556,34 +701,21 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
     <div class="periodization-card">
       <div class="periodization-header">
         <div class="periodization-badge">Screen-Free Progression Protocol</div>
-        <div class="periodization-title">8-Week Periodization Blueprint</div>
-        <div class="periodization-subtitle">Systematic overload architecture: follow phase guidelines and log working sets in the physical matrix below without phone screen distractions.</div>
+        <div class="periodization-title">${escapeHtml(periodization.title)}</div>
+        <div class="periodization-subtitle">${escapeHtml(periodization.subtitle)}</div>
       </div>
       <div class="periodization-grid">
-        <div class="phase-card">
-          <div class="phase-badge">Phase 1 • Weeks 1–3</div>
-          <div class="phase-title">Foundation &amp; Hypertrophy</div>
-          <div class="phase-metrics">Volume Base • 3–4 Sets • RPE 7–8</div>
-          <div class="phase-desc">Controlled 2-3s eccentrics, solidifying mind-muscle connection.</div>
-        </div>
-        <div class="phase-card">
-          <div class="phase-badge">Phase 2 • Weeks 4–6</div>
-          <div class="phase-title">Progressive Overload &amp; Density</div>
-          <div class="phase-metrics">Overload Ramp • 4 Sets • RPE 8–9</div>
-          <div class="phase-desc">Increase working weight by +2.5kg/+5lbs or +1-2 reps per movement.</div>
-        </div>
-        <div class="phase-card">
-          <div class="phase-badge">Phase 3 • Week 7</div>
-          <div class="phase-title">Peak Intensity</div>
-          <div class="phase-metrics">Peak Load • 4–5 Sets • RPE 9–9.5</div>
-          <div class="phase-desc">Heavy compound sets, maximum density, challenge high thresholds.</div>
-        </div>
-        <div class="phase-card deload-phase">
-          <div class="phase-badge deload-badge">Phase 4 • Week 8</div>
-          <div class="phase-title">Active Deload &amp; Joint Restoration</div>
-          <div class="phase-metrics deload-metrics">Deload &amp; Recovery • 2 Sets • 50–60% standard load</div>
-          <div class="phase-desc">Flush metabolic waste, restore joint synovial health and CNS readiness.</div>
-        </div>
+        ${(periodization.phases || [])
+          .map(
+            (phase) => `
+        <div class="phase-card${phase.isDeload ? ' deload-phase' : ''}">
+          <div class="phase-badge${phase.isDeload ? ' deload-badge' : ''}">${escapeHtml(phase.badge)}</div>
+          <div class="phase-title">${escapeHtml(phase.title)}</div>
+          <div class="phase-metrics${phase.isDeload ? ' deload-metrics' : ''}">${escapeHtml(phase.metrics)}</div>
+          <div class="phase-desc">${escapeHtml(phase.desc)}</div>
+        </div>`
+          )
+          .join('')}
       </div>
     </div>
 
@@ -623,8 +755,15 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
             </tr>
           </thead>
           ${(day.exercises || [])
-            .map(
-              (ex, idx) => `
+            .map((ex, idx) => {
+              const safeSubs = getSafeSubstitutions(ex, {
+                location,
+                exclusionZones: rawExclusionsList,
+                existingDayCatalogIds: (day.exercises || []).map((e) => e.catalogId || e.id),
+              });
+              const displaySubs =
+                safeSubs.length > 0 ? safeSubs : ex.substitutions || [];
+              return `
           <tbody class="exercise-item-group">
             <tr class="exercise-main-row">
               <td class="col-svg">
@@ -635,6 +774,8 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
                 <div class="taxonomy-line">
                   ${ex.movementPatternLabel ? `<span class="pattern-pill">${escapeHtml(ex.movementPatternLabel)}</span>` : ''}
                   ${(ex.primaryMuscleLabels || []).map((m) => `<span class="muscle-pill">${escapeHtml(m)}</span>`).join('')}
+                  ${ex.targetRir ? `<span class="rir-pill">${escapeHtml(ex.targetRir)}</span>` : ''}
+                  ${ex.isFocusBoosted ? `<span class="focus-pill">★ Focus Priority</span>` : ''}
                 </div>
                 ${ex.svgNote ? `<div class="cue-item cue-approx">≈ ${escapeHtml(ex.svgNote)}</div>` : ''}
                 ${(ex.formCues || [])
@@ -647,8 +788,8 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
               <td class="col-metric">${escapeHtml(ex.restSeconds)}s</td>
               <td class="col-subs">
                 ${
-                  ex.substitutions && ex.substitutions.length > 0
-                    ? ex.substitutions.map((sub) => `<span class="sub-tag">${escapeHtml(sub)}</span>`).join(' ')
+                  displaySubs.length > 0
+                    ? displaySubs.map((sub) => `<span class="sub-tag">${escapeHtml(sub)}</span>`).join(' ')
                     : '<span class="empty-subs">—</span>'
                 }
               </td>
@@ -698,8 +839,8 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
               </td>
             </tr>
           </tbody>
-          `
-            )
+          `;
+            })
             .join('')}
         </table>
       </div>
@@ -712,16 +853,189 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
       <span>Screen-Free 8-Week Progressive Overload Blueprint</span>
     </div>
   </div>
+  <script>
+    window.addEventListener('load', function() {
+      // If opened in a standalone tab/window (mobile web or fallback), auto-trigger print dialog
+      if (window.self === window.top) {
+        setTimeout(function() {
+          try {
+            window.print();
+          } catch (e) {
+            console.log('Direct print trigger suppressed or unsupported in this browser context.');
+          }
+        }, 350);
+      }
+    });
+  </script>
 </body>
 </html>
   `.trim();
 }
 
-export async function downloadWorkoutPdf({ routine, userProfile, logistics, targeting }) {
+/**
+ * Cross-browser printing and PDF export helper for web platforms.
+ *
+ * 1. Desktop Web (Chrome, Firefox, Safari, Edge):
+ *    Uses an isolated hidden <iframe>. When iframe.contentWindow.print() is invoked,
+ *    the browser's native print preview dialog renders ONLY the workout program document
+ *    (clean white vector layout with @page margins) rather than the React Native Web app UI.
+ *    Desktop users can directly choose "Save as PDF" or select their printer.
+ *
+ * 2. Mobile Web (iOS Safari, iOS Chrome, Android Chrome):
+ *    - iOS Safari has WebKit bugs with printing hidden iframes (often printing the parent page).
+ *    - iOS Chrome disables window.print() inside third-party WKWebView contexts.
+ *    - Android Chrome often suppresses iframe print spoolers.
+ *    For mobile web, we populate a dedicated tab/window (either pre-opened in the tap gesture
+ *    or opened here). It auto-triggers the system print dialog where supported and provides
+ *    an interactive top toolbar with clear instructions on saving as PDF.
+ *
+ * 3. Fallback:
+ *    If window opening or iframe printing is blocked by strict browser security policies,
+ *    it initiates a direct file download of the standalone HTML document.
+ */
+function printViaIframe(html) {
+  return new Promise((resolve, reject) => {
+    try {
+      const oldIframe = document.getElementById('fig-workout-print-frame');
+      if (oldIframe) {
+        oldIframe.remove();
+      }
+
+      const iframe = document.createElement('iframe');
+      iframe.id = 'fig-workout-print-frame';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      iframe.style.visibility = 'hidden';
+      iframe.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentWindow?.document;
+      if (!iframeDoc) {
+        iframe.remove();
+        return reject(new Error('Cannot access iframe document'));
+      }
+
+      iframeDoc.open();
+      iframeDoc.write(html);
+      iframeDoc.close();
+
+      let hasTriggered = false;
+      const executePrint = () => {
+        if (hasTriggered) return;
+        hasTriggered = true;
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+          // Delay cleanup so the browser print engine finishes reading iframe resources
+          setTimeout(() => {
+            try {
+              iframe.remove();
+            } catch (e) {}
+            resolve();
+          }, 1500);
+        } catch (err) {
+          try {
+            iframe.remove();
+          } catch (e) {}
+          reject(err);
+        }
+      };
+
+      iframe.onload = () => {
+        setTimeout(executePrint, 250);
+      };
+
+      // Fallback timer if onload fails to fire
+      setTimeout(executePrint, 600);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+export async function printWebWorkoutDocument({ html, title = 'Workout-Program', targetWindow = null }) {
+  if (typeof window === 'undefined') return;
+
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent || ''
+  );
+
+  // 1. If mobile web and a targetWindow was pre-opened in the user tap gesture:
+  if (targetWindow && !targetWindow.closed) {
+    try {
+      targetWindow.document.open();
+      targetWindow.document.write(html);
+      targetWindow.document.close();
+      targetWindow.document.title = title;
+      return;
+    } catch (e) {
+      console.warn('Failed writing to pre-opened targetWindow, falling back:', e);
+      try {
+        targetWindow.close();
+      } catch (err) {}
+    }
+  }
+
+  // 2. On desktop browsers, prefer hidden iframe to avoid unwanted tabs or popup warnings
+  if (!isMobile) {
+    try {
+      await printViaIframe(html);
+      return;
+    } catch (e) {
+      console.warn('Iframe printing failed or blocked, falling back to window/download:', e);
+    }
+  }
+
+  // 3. Mobile web or fallback from iframe error: open dedicated window
+  try {
+    const printWin = window.open('', '_blank');
+    if (printWin) {
+      printWin.document.open();
+      printWin.document.write(html);
+      printWin.document.close();
+      printWin.document.title = title;
+      return;
+    }
+  } catch (e) {
+    console.warn('window.open failed:', e);
+  }
+
+  // 4. Ultimate fallback: direct HTML file download via Blob
+  try {
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = `${title}.html`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      link.remove();
+      URL.revokeObjectURL(blobUrl);
+    }, 2000);
+  } catch (err) {
+    console.error('All print and download strategies failed:', err);
+    throw err;
+  }
+}
+
+export async function downloadWorkoutPdf({
+  routine,
+  userProfile,
+  logistics,
+  targeting,
+  targetWindow = null,
+}) {
   const html = buildWorkoutHtml({ routine, userProfile, logistics, targeting });
 
   if (Platform.OS === 'web') {
-    await Print.printAsync({ html });
+    const safeTitle = (routine?.programName || 'Workout-Program').replace(/[^\w\s-]/g, '');
+    await printWebWorkoutDocument({ html, title: safeTitle, targetWindow });
     return;
   }
 

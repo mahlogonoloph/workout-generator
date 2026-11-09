@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../theme/colors';
 import useWorkoutStore from '../store/useWorkoutStore';
+import { estimateWeeklyVolume } from '../api/generationClient';
 
 const GOAL_OPTIONS = [
   { id: 'Hypertrophy / Muscle', title: 'Hypertrophy', desc: 'Maximal muscular volume & density' },
@@ -87,10 +88,15 @@ export default function IntakeScreen({ navigation }) {
   const hasFeedbackMemory =
     likedCount > 0 || dislikedCount > 0 || (feedback?.intensityRating && feedback.intensityRating !== 'optimal');
 
-  // Dynamic Volume Calculation for Motion Graphic
-  const estimatedWeeklySets =
-    selectedFrequency *
-    (selectedDuration >= 75 ? 22 : selectedDuration >= 60 ? 18 : selectedDuration >= 45 ? 14 : 10);
+  // Dynamic Science-Based Volume Calculation for Motion Graphic
+  const volumeEstimate = estimateWeeklyVolume({
+    primaryGoal: selectedGoal,
+    frequencyDays: selectedFrequency,
+    durationMinutes: selectedDuration,
+    intensityRating: feedback?.intensityRating || 'optimal',
+    focusAreas: selectedFocusAreas,
+  });
+  const estimatedWeeklySets = volumeEstimate.weeklySets;
 
   // Innovative Animations & Micro-Interactions
   const entranceHeroAnim = useRef(new Animated.Value(0)).current;

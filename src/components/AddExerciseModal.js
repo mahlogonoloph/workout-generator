@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { Colors } from '../theme/colors';
+import { useWorkoutStore } from '../store/useWorkoutStore';
 import {
   WGER_EXERCISE_CATALOG,
   MOVEMENT_PATTERNS,
@@ -30,6 +31,10 @@ export default function AddExerciseModal({
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [onlySafeForSetup, setOnlySafeForSetup] = useState(true);
+
+  const location = useWorkoutStore((state) => state.logistics?.location || 'Commercial Gym');
+  const exclusionZones = useWorkoutStore((state) => state.targeting?.exclusionZones || []);
 
   const isSwapMode = mode === 'swap';
 
@@ -51,6 +56,17 @@ export default function AddExerciseModal({
     const query = searchQuery.trim().toLowerCase();
 
     return WGER_EXERCISE_CATALOG.filter((item) => {
+      // Setup & Injury Safety filter
+      if (onlySafeForSetup) {
+        const matchesLocation = (item.locations || []).includes(location);
+        const conflictingJoints = (item.jointStress || []).filter((j) =>
+          exclusionZones.some((ez) => ez.toLowerCase() === j.toLowerCase())
+        );
+        if (!matchesLocation || conflictingJoints.length > 0) {
+          return false;
+        }
+      }
+
       // Category filter
       if (selectedCategory !== 'All' && item.category !== selectedCategory) {
         return false;
@@ -75,7 +91,7 @@ export default function AddExerciseModal({
 
       return nameMatch || catMatch || equipMatch || muscleMatch || patternMatch;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, onlySafeForSetup, location, exclusionZones]);
 
   if (!visible) return null;
 
@@ -105,6 +121,9 @@ export default function AddExerciseModal({
     const primaryMuscleLabels = (item.primaryMuscles || []).map(
       (m) => MUSCLE_GROUPS[m]?.label || m
     );
+    const conflictingJoints = (item.jointStress || []).filter((j) =>
+      exclusionZones.some((ez) => ez.toLowerCase() === j.toLowerCase())
+    );
 
     return (
       <View style={[styles.exerciseCard, isCurrentSwapping && styles.currentExerciseCard]}>
@@ -124,6 +143,18 @@ export default function AddExerciseModal({
                 {item.difficulty?.toUpperCase()}
               </Text>
             </View>
+            {item.stretchBiased && (
+              <View style={styles.stretchPill}>
+                <Text style={styles.stretchPillText}>↔ Stretch-Biased</Text>
+              </View>
+            )}
+            {conflictingJoints.length > 0 && (
+              <View style={styles.warningPill}>
+                <Text style={styles.warningPillText}>
+                  {`⚠ Stresses: ${conflictingJoints.join(', ')}`}
+                </Text>
+              </View>
+            )}
           </View>
 
           {primaryMuscleLabels.length > 0 && (
@@ -264,6 +295,46 @@ export default function AddExerciseModal({
               );
             }}
           />
+        </View>
+
+        {/* SETUP & SAFETY FILTER BAR */}
+        <View style={styles.safetyFilterBar}>
+          <TouchableOpacity
+            activeOpacity={0.75}
+            onPress={() => setOnlySafeForSetup(true)}
+            style={[
+              styles.safetyTogglePill,
+              onlySafeForSetup && styles.safetyTogglePillActive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.safetyTogglePillText,
+                onlySafeForSetup && styles.safetyTogglePillTextActive,
+              ]}
+              numberOfLines={1}
+            >
+              {`🛡 Safe for ${location}${exclusionZones.length > 0 ? ` • No ${exclusionZones.join('/')}` : ''}`}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.75}
+            onPress={() => setOnlySafeForSetup(false)}
+            style={[
+              styles.safetyTogglePill,
+              !onlySafeForSetup && styles.safetyTogglePillActive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.safetyTogglePillText,
+                !onlySafeForSetup && styles.safetyTogglePillTextActive,
+              ]}
+            >
+              {`Show All (${WGER_EXERCISE_CATALOG.length})`}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* EXERCISES LIST */}
@@ -540,6 +611,59 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.textSecondary,
     marginTop: 2,
+  },
+  safetyFilterBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    gap: 8,
+  },
+  safetyTogglePill: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  safetyTogglePillActive: {
+    backgroundColor: Colors.primarySubtle,
+    borderColor: Colors.primary,
+  },
+  safetyTogglePillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+  },
+  safetyTogglePillTextActive: {
+    color: Colors.primary,
+  },
+  stretchPill: {
+    backgroundColor: 'rgba(78, 159, 116, 0.14)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(78, 159, 116, 0.3)',
+  },
+  stretchPillText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: Colors.success,
+  },
+  warningPill: {
+    backgroundColor: 'rgba(255, 107, 107, 0.14)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 107, 107, 0.3)',
+  },
+  warningPillText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: Colors.error,
   },
 });
 

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../theme/colors';
@@ -19,6 +20,7 @@ import EditPrescriptionModal from '../components/EditPrescriptionModal';
 import AddExerciseModal from '../components/AddExerciseModal';
 import ConfirmModal from '../components/ConfirmModal';
 import { WGER_EXERCISE_CATALOG } from '../data/wgerExerciseCatalog.js';
+import { getSafeSubstitutions } from '../api/generationClient.js';
 
 const SWAP_REASONS = [
   { id: 'equipment_busy', label: 'Equipment Busy', sub: 'Swap for today only' },
@@ -168,6 +170,7 @@ export default function RoutineScreen({ navigation }) {
   // Innovative animations
   const dayFadeAnim = useRef(new Animated.Value(1)).current;
   const heartPopAnim = useRef(new Animated.Value(1)).current;
+  const [animatingHeartKey, setAnimatingHeartKey] = useState(null);
 
   const likedIds = feedback?.likedExerciseIds || [];
   const dislikedIds = feedback?.dislikedExerciseIds || [];
@@ -194,6 +197,7 @@ export default function RoutineScreen({ navigation }) {
   };
 
   const handleLikeToggle = (catalogKey) => {
+    setAnimatingHeartKey(catalogKey);
     Animated.sequence([
       Animated.timing(heartPopAnim, {
         toValue: 1.35,
@@ -207,14 +211,21 @@ export default function RoutineScreen({ navigation }) {
         tension: 80,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      setAnimatingHeartKey((prev) => (prev === catalogKey ? null : prev));
+    });
     toggleLikeExercise(catalogKey);
   };
 
   const handleDirectSubstitutionTap = (exerciseIndex, exercise, subName) => {
-    const directMatch = WGER_EXERCISE_CATALOG.find(
-      (item) => item.name.toLowerCase() === subName.toLowerCase()
-    );
+    const normalizedSub = (subName || '').toLowerCase().trim();
+    const directMatch =
+      WGER_EXERCISE_CATALOG.find((item) => item.name.toLowerCase() === normalizedSub) ||
+      WGER_EXERCISE_CATALOG.find(
+        (item) =>
+          item.name.toLowerCase().includes(normalizedSub) ||
+          normalizedSub.includes(item.name.toLowerCase())
+      );
     if (directMatch) {
       setConfirmModalConfig({
         title: 'Swap Exercise?',
@@ -245,6 +256,27 @@ export default function RoutineScreen({ navigation }) {
   };
 
   const handleDownloadPdf = async () => {
+    // On mobile web, synchronously obtain a new tab reference inside the direct user tap gesture
+    // so strict mobile pop-up blockers (iOS Safari, Android Chrome) do not suppress the tab.
+    let targetWindow = null;
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent || ''
+      );
+      if (isMobile) {
+        try {
+          targetWindow = window.open('', '_blank');
+          if (targetWindow) {
+            targetWindow.document.write(
+              '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Generating Workout Blueprint...</title><style>body{background:#1F1124;color:#FAF4F0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;font-size:14px;}</style></head><body><div><div style="font-size:32px;margin-bottom:12px;">🏋️</div><div style="font-weight:700;">Generating Workout Blueprint...</div><div style="font-size:12px;color:#E2CAD4;margin-top:6px;">Preparing your printable 8-week guide</div></div></body></html>'
+            );
+          }
+        } catch (e) {
+          targetWindow = null;
+        }
+      }
+    }
+
     try {
       setIsDownloading(true);
       await downloadWorkoutPdf({
@@ -252,8 +284,14 @@ export default function RoutineScreen({ navigation }) {
         userProfile,
         logistics,
         targeting,
+        targetWindow,
       });
     } catch (error) {
+      if (targetWindow && !targetWindow.closed) {
+        try {
+          targetWindow.close();
+        } catch (e) {}
+      }
       console.error('Failed to generate or download workout PDF:', error);
       setConfirmModalConfig({
         title: 'Download Error',
@@ -611,6 +649,16 @@ export default function RoutineScreen({ navigation }) {
                   <View style={styles.exerciseTitleBlock}>
                     <Text style={styles.exerciseName}>{exercise.name}</Text>
                     <View style={styles.taxonomyMetaRow}>
+                      {exercise.isFocusBoosted && (
+                        <View style={styles.focusBoostBadge}>
+                          <Text style={styles.focusBoostBadgeText}>★ FOCUS +1 SET</Text>
+                        </View>
+                      )}
+                      {exercise.stretchBiased && (
+                        <View style={styles.stretchBadge}>
+                          <Text style={styles.stretchBadgeText}>↔ STRETCH</Text>
+                        </View>
+                      )}
                       {exercise.movementPatternLabel && (
                         <View style={styles.patternBadge}>
                           <Text style={styles.patternBadgeText}>
@@ -641,7 +689,13 @@ export default function RoutineScreen({ navigation }) {
                         isLiked && styles.iconActionBtnLiked,
                       ]}
                     >
-                      <Animated.View style={{ transform: [{ scale: heartPopAnim }] }}>
+                      <Animated.View
+                        style={
+                          animatingHeartKey === catalogKey
+                            ? { transform: [{ scale: heartPopAnim }] }
+                            : undefined
+                        }
+                      >
                         <Text
                           style={[
                             styles.iconActionText,
@@ -774,7 +828,9 @@ export default function RoutineScreen({ navigation }) {
                   </View>
                   <View style={styles.prescriptionDivider} />
                   <View style={styles.prescriptionItem}>
-                    <Text style={styles.prescriptionLabel}>REPS</Text>
+                    <Text style={styles.prescriptionLabel}>
+                      {exercise.prescriptionType === 'time' ? 'HOLD' : 'REPS'}
+                    </Text>
                     <Text style={styles.prescriptionValue}>{exercise.reps}</Text>
                   </View>
                   <View style={styles.prescriptionDivider} />
@@ -782,6 +838,17 @@ export default function RoutineScreen({ navigation }) {
                     <Text style={styles.prescriptionLabel}>REST</Text>
                     <Text style={styles.prescriptionValue}>{exercise.restSeconds}s</Text>
                   </View>
+                  {exercise.targetRir && (
+                    <>
+                      <View style={styles.prescriptionDivider} />
+                      <View style={styles.prescriptionItem}>
+                        <Text style={styles.prescriptionLabel}>EFFORT</Text>
+                        <Text style={styles.prescriptionRirValue}>
+                          {exercise.targetRir.split(' (')[0]}
+                        </Text>
+                      </View>
+                    </>
+                  )}
                   <View style={styles.prescriptionDivider} />
                   <View style={styles.prescriptionEditIndicator}>
                     <Text style={styles.prescriptionEditIcon}>✎</Text>
@@ -802,24 +869,37 @@ export default function RoutineScreen({ navigation }) {
                   </View>
                 )}
 
-                {/* Substitution Fallbacks */}
-                {exercise.substitutions && exercise.substitutions.length > 0 && (
-                  <View style={styles.subsContainer}>
-                    <Text style={styles.subsHeader}>DIRECT SUBSTITUTIONS</Text>
-                    <View style={styles.subsRow}>
-                      {exercise.substitutions.map((sub, sIdx) => (
-                        <TouchableOpacity
-                          key={sIdx}
-                          style={styles.subTag}
-                          activeOpacity={0.7}
-                          onPress={() => handleDirectSubstitutionTap(index, exercise, sub)}
-                        >
-                          <Text style={styles.subTagText}>⇄ {sub}</Text>
-                        </TouchableOpacity>
-                      ))}
+                {/* Substitution Fallbacks (Filtered for User Setup & Joint Safety) */}
+                {(() => {
+                  const safeSubs = getSafeSubstitutions(exercise, {
+                    location: logistics?.location,
+                    exclusionZones: targeting?.exclusionZones,
+                    dislikedExerciseIds: dislikedIds,
+                    existingDayCatalogIds: (activeDay.exercises || []).map(
+                      (e) => e.catalogId || e.id
+                    ),
+                  });
+                  const displaySubs =
+                    safeSubs.length > 0 ? safeSubs : exercise.substitutions || [];
+                  if (displaySubs.length === 0) return null;
+                  return (
+                    <View style={styles.subsContainer}>
+                      <Text style={styles.subsHeader}>DIRECT SUBSTITUTIONS</Text>
+                      <View style={styles.subsRow}>
+                        {displaySubs.map((sub, sIdx) => (
+                          <TouchableOpacity
+                            key={sIdx}
+                            style={styles.subTag}
+                            activeOpacity={0.7}
+                            onPress={() => handleDirectSubstitutionTap(index, exercise, sub)}
+                          >
+                            <Text style={styles.subTagText}>⇄ {sub}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
                     </View>
-                  </View>
-                )}
+                  );
+                })()}
               </View>
             );
           })}
@@ -1359,6 +1439,34 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 5,
   },
+  focusBoostBadge: {
+    backgroundColor: 'rgba(200, 70, 99, 0.24)',
+    borderRadius: 5,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  focusBoostBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 0.4,
+  },
+  stretchBadge: {
+    backgroundColor: 'rgba(78, 159, 116, 0.2)',
+    borderRadius: 5,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(78, 159, 116, 0.45)',
+  },
+  stretchBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: Colors.success,
+    letterSpacing: 0.3,
+  },
   patternBadge: {
     backgroundColor: Colors.surfaceElevated,
     borderRadius: 5,
@@ -1587,6 +1695,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.textPrimary,
     marginTop: 2,
+  },
+  prescriptionRirValue: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.primary,
+    marginTop: 3,
   },
   prescriptionDivider: {
     width: 1,
