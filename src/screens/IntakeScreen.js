@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,13 @@ import {
   StatusBar,
   Animated,
   Easing,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../theme/colors';
 import useWorkoutStore from '../store/useWorkoutStore';
 import { estimateWeeklyVolume } from '../api/generationClient';
+import ConfirmModal from '../components/ConfirmModal';
 
 const GOAL_OPTIONS = [
   { id: 'Hypertrophy / Muscle', title: 'Hypertrophy', desc: 'Maximal muscular volume & density' },
@@ -69,6 +71,8 @@ export default function IntakeScreen({ navigation }) {
   const logistics = useWorkoutStore((state) => state.logistics);
   const targeting = useWorkoutStore((state) => state.targeting);
   const feedback = useWorkoutStore((state) => state.feedback);
+  const generatedRoutine = useWorkoutStore((state) => state.generatedRoutine);
+  const isEdited = useWorkoutStore((state) => state.isEdited);
   const setPrimaryGoal = useWorkoutStore((state) => state.setPrimaryGoal);
   const setLocation = useWorkoutStore((state) => state.setLocation);
   const setFrequencyDays = useWorkoutStore((state) => state.setFrequencyDays);
@@ -76,6 +80,8 @@ export default function IntakeScreen({ navigation }) {
   const toggleExclusionZone = useWorkoutStore((state) => state.toggleExclusionZone);
   const toggleFocusArea = useWorkoutStore((state) => state.toggleFocusArea);
   const resetFeedback = useWorkoutStore((state) => state.resetFeedback);
+
+  const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
 
   const selectedGoal = userProfile.primaryGoal || 'Hypertrophy / Muscle';
   const selectedLocation = logistics.location || 'Commercial Gym';
@@ -104,7 +110,6 @@ export default function IntakeScreen({ navigation }) {
   const entranceSectionAnim = useRef(new Animated.Value(0)).current;
   const beaconPulse = useRef(new Animated.Value(1)).current;
   const beaconOpacity = useRef(new Animated.Value(0.75)).current;
-  const ctaPulseScale = useRef(new Animated.Value(1)).current;
   const volumeMeterAnim = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
@@ -162,24 +167,6 @@ export default function IntakeScreen({ navigation }) {
         ]),
       ])
     ).start();
-
-    // 3. CTA Breathing Pulse
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(ctaPulseScale, {
-          toValue: 1.02,
-          duration: 1800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(ctaPulseScale, {
-          toValue: 1,
-          duration: 1800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
   }, []);
 
   // Update volume meter whenever parameters change
@@ -199,6 +186,10 @@ export default function IntakeScreen({ navigation }) {
   });
 
   const handleGenerate = () => {
+    if (generatedRoutine && isEdited) {
+      setShowOverwriteConfirm(true);
+      return;
+    }
     navigation.navigate('Loading');
   };
 
@@ -236,12 +227,49 @@ export default function IntakeScreen({ navigation }) {
                 ]}
               />
             </View>
-            <Text style={styles.purposeTagLabel}>Just a routine generator :D</Text>
+            <Text style={styles.purposeTagLabel}>FIG TRAINING ENGINE • ZERO-DISTRACTION</Text>
           </View>
           <Text style={styles.purposeStatementText}>
-            a tool that generates a clean, distraction-free 8-Week Physical Training Binder / PDF
+            Generate a clean, distraction-free 8-Week Physical Training Binder &amp; Printable PDF.
           </Text>
         </Animated.View>
+
+        {/* Resume Saved Routine Banner (Prevents accidental loss of customized routines) */}
+        {generatedRoutine && Array.isArray(generatedRoutine.schedule) && generatedRoutine.schedule.length > 0 && (
+          <Animated.View
+            style={[
+              styles.savedRoutineBanner,
+              {
+                opacity: entranceHeroAnim,
+                transform: [{ translateY: entranceHeroSlide }],
+              },
+            ]}
+          >
+            <View style={styles.savedRoutineInfo}>
+              <View style={styles.savedRoutineBadgeRow}>
+                <Text style={styles.savedRoutineEyebrow}>ACTIVE BLUEPRINT SAVED</Text>
+                {isEdited && (
+                  <View style={styles.savedEditedBadge}>
+                    <Text style={styles.savedEditedBadgeText}>CUSTOMIZED</Text>
+                  </View>
+                )}
+              </View>
+              <Text style={styles.savedRoutineTitle} numberOfLines={1}>
+                {generatedRoutine.programName || 'Your 8-Week Routine'}
+              </Text>
+              <Text style={styles.savedRoutineMeta}>
+                {generatedRoutine.schedule.length} Days / Week • Ready to view or export PDF
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.resumeRoutineBtn}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('Routine')}
+            >
+              <Text style={styles.resumeRoutineBtnText}>View Plan →</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
 
         {/* Live Biomechanical Architecture Metric Bar (Motion Graphic) */}
         <Animated.View
@@ -544,21 +572,66 @@ export default function IntakeScreen({ navigation }) {
             </Text>
           </View>
         )}
+
+        {/* Section 8: Open-Source Attribution & Health Disclaimer */}
+        <View style={styles.attributionFooterCard}>
+          <View style={styles.attributionHeaderRow}>
+            <Text style={styles.attributionTitle}>OPEN-SOURCE CREDITS &amp; SAFETY NOTICE</Text>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => Linking.openURL('https://wger.de')}
+            >
+              <Text style={styles.attributionLink}>wger.de ↗</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.attributionText}>
+            Exercise and muscle taxonomy seeded from the{' '}
+            <Text
+              style={styles.attributionInlineLink}
+              onPress={() => Linking.openURL('https://github.com/wger-project/wger')}
+            >
+              wger Workout Manager
+            </Text>{' '}
+            open-source project (licensed under CC-BY-SA / AGPL-3.0). Custom biomechanical scoring, periodization, and vector posture diagrams by Fig Fitness.
+          </Text>
+          <Text style={styles.disclaimerText}>
+            Medical Disclaimer: This tool provides general strength and conditioning templates for educational purposes only and is not medical advice. Consult a qualified healthcare professional before beginning any exercise program, especially if you have pre-existing injuries or joint conditions.
+          </Text>
+        </View>
       </ScrollView>
 
       {/* Floating Bottom Action Bar */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-        <Animated.View style={{ transform: [{ scale: ctaPulseScale }], width: '100%' }}>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            activeOpacity={0.85}
-            onPress={handleGenerate}
-          >
-            <Text style={styles.primaryButtonText}>Generate Routine</Text>
-            <Text style={styles.buttonArrow}>→</Text>
-          </TouchableOpacity>
-        </Animated.View>
+        <TouchableOpacity
+          style={styles.primaryButton}
+          activeOpacity={0.85}
+          onPress={handleGenerate}
+        >
+          <Text style={styles.primaryButtonText}>
+            {generatedRoutine ? 'Generate New Routine' : 'Generate Routine'}
+          </Text>
+          <Text style={styles.buttonArrow}>→</Text>
+        </TouchableOpacity>
       </View>
+
+      {/* Overwrite Confirmation Modal when user has manual customizations */}
+      <ConfirmModal
+        visible={showOverwriteConfirm}
+        title="Replace Customized Plan?"
+        message="You have manual edits on your saved workout plan. Generating a new routine will replace those customizations."
+        confirmText="Generate New Plan"
+        cancelText="Keep Saved Plan"
+        isDestructive={false}
+        icon="↻"
+        onConfirm={() => {
+          setShowOverwriteConfirm(false);
+          navigation.navigate('Loading');
+        }}
+        onCancel={() => {
+          setShowOverwriteConfirm(false);
+          navigation.navigate('Routine');
+        }}
+      />
     </View>
   );
 }
@@ -661,7 +734,7 @@ const styles = StyleSheet.create({
   architectureBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: Colors.accent,
+    color: '#E09F67',
   },
   volumeMeterTrack: {
     width: '100%',
@@ -917,6 +990,107 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textSecondary,
     lineHeight: 18,
+  },
+  savedRoutineBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    gap: 12,
+  },
+  savedRoutineInfo: {
+    flex: 1,
+  },
+  savedRoutineBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  savedRoutineEyebrow: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 0.9,
+  },
+  savedEditedBadge: {
+    backgroundColor: 'rgba(200, 70, 99, 0.22)',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  savedEditedBadgeText: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    letterSpacing: 0.5,
+  },
+  savedRoutineTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: 2,
+  },
+  savedRoutineMeta: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+  },
+  resumeRoutineBtn: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  resumeRoutineBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  attributionFooterCard: {
+    backgroundColor: 'rgba(41, 22, 48, 0.6)',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  attributionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  attributionTitle: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: Colors.textMuted,
+    letterSpacing: 0.8,
+  },
+  attributionLink: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  attributionText: {
+    fontSize: 11,
+    lineHeight: 16,
+    color: Colors.textSecondary,
+    marginBottom: 8,
+  },
+  attributionInlineLink: {
+    color: Colors.primary,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
+  disclaimerText: {
+    fontSize: 10.5,
+    lineHeight: 15,
+    color: Colors.textMuted,
   },
   bottomBar: {
     position: 'absolute',

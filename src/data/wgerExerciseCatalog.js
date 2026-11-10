@@ -1,6 +1,8 @@
 /**
  * Open-Source Exercise Database (Seeded from wger.de Workout Manager v2 Taxonomy)
- * Source Reference: https://wger.de/api/v2/exerciseinfo/ & wger Muscle/Equipment Taxonomy
+ * Source Reference: https://wger.de/api/v2/exerciseinfo/ | https://github.com/wger-project/wger
+ * License & Attribution: wger exercise & muscle taxonomy data is credited to the wger project
+ * and its contributors under Creative Commons Attribution-ShareAlike (CC-BY-SA) / AGPL-3.0.
  *
  * Organized into a comprehensive Movement Pattern & Muscle Group Taxonomy
  * for deterministic, biomechanically balanced workout generation without LLM API costs.

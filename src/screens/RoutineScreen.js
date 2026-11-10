@@ -10,6 +10,7 @@ import {
   Animated,
   Easing,
   Platform,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../theme/colors';
@@ -400,9 +401,13 @@ export default function RoutineScreen({ navigation }) {
                 {logistics?.location || 'Commercial Gym'}
               </Text>
             </View>
-            <View style={styles.badgeSubtle}>
-              <Text style={styles.badgeSubtleText}>wger Open-Source DB</Text>
-            </View>
+            <TouchableOpacity
+              style={styles.badgeSubtle}
+              activeOpacity={0.7}
+              onPress={() => Linking.openURL('https://wger.de')}
+            >
+              <Text style={styles.badgeSubtleText}>wger Open-Source DB ↗</Text>
+            </TouchableOpacity>
             {isEdited && (
               <View style={styles.editedBadge}>
                 <Text style={styles.editedBadgeText}>CUSTOMIZED</Text>
@@ -930,6 +935,25 @@ export default function RoutineScreen({ navigation }) {
             </Text>
           </View>
         </TouchableOpacity>
+
+        {/* Attribution & Health Disclaimer Footer */}
+        <View style={styles.routineDisclaimerCard}>
+          <Text style={styles.routineDisclaimerText}>
+            <Text style={styles.routineDisclaimerBold}>Open-Source Attribution: </Text>
+            Exercise and muscle taxonomy seeded from{' '}
+            <Text
+              style={styles.routineDisclaimerLink}
+              onPress={() => Linking.openURL('https://wger.de')}
+            >
+              wger Workout Manager (wger.de)
+            </Text>{' '}
+            under CC-BY-SA / AGPL-3.0.
+          </Text>
+          <Text style={[styles.routineDisclaimerText, { marginTop: 4 }]}>
+            <Text style={styles.routineDisclaimerBold}>Health Notice: </Text>
+            For educational purposes only. Consult a physician before starting a new training program and stop immediately if you experience sharp joint pain.
+          </Text>
+        </View>
       </ScrollView>
 
       {/* Floating Bottom Action Bar */}
@@ -1827,6 +1851,29 @@ const styles = StyleSheet.create({
   addExerciseSubtitle: {
     fontSize: 11,
     color: Colors.textMuted,
+  },
+  routineDisclaimerCard: {
+    backgroundColor: 'rgba(41, 22, 48, 0.55)',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 4,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  routineDisclaimerText: {
+    fontSize: 10.5,
+    lineHeight: 15,
+    color: Colors.textMuted,
+  },
+  routineDisclaimerBold: {
+    fontWeight: '700',
+    color: Colors.textSecondary,
+  },
+  routineDisclaimerLink: {
+    color: Colors.primary,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
   },
   bottomBar: {
     position: 'absolute',

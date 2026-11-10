@@ -524,9 +524,21 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
       padding-top: 10px;
       margin-top: 16px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 4px;
       color: #8C788A;
       font-size: 8.5px;
+    }
+    .footer-top-row {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      color: #6A5668;
+    }
+    .footer-disclaimer {
+      font-size: 8px;
+      color: #8C788A;
+      line-height: 1.35;
     }
 
   @media print {
@@ -849,8 +861,13 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
       .join('')}
 
     <div class="footer">
-      <span>Generated via Fig Workout Engine • Powered by wger Open-Source Exercise Taxonomy</span>
-      <span>Screen-Free 8-Week Progressive Overload Blueprint</span>
+      <div class="footer-top-row">
+        <span>Generated via Fig Workout Generator • Exercise &amp; Muscle Taxonomy credited to wger Workout Manager (wger.de, CC-BY-SA / AGPL-3.0)</span>
+        <span>Screen-Free 8-Week Progressive Overload Blueprint</span>
+      </div>
+      <div class="footer-disclaimer">
+        <strong>Medical &amp; Safety Notice:</strong> This training blueprint is provided for general educational and fitness purposes only and does not constitute medical advice. Consult a physician or qualified healthcare professional before beginning any exercise program, and discontinue any movement that causes sharp or unusual joint pain.
+      </div>
     </div>
   </div>
   <script>

@@ -353,11 +353,15 @@ export default function LoadingScreen({ navigation }) {
           <Text style={styles.percentNumber}>{progressPercent}%</Text>
         </View>
 
-        {/* Skip action */}
+        {/* Skip or Recovery action */}
         <TouchableOpacity
           style={styles.skipAction}
           activeOpacity={0.7}
           onPress={() => {
+            if (error) {
+              navigation.goBack();
+              return;
+            }
             skipRequestedRef.current = true;
             if (synthesisReadyRef.current && !hasNavigatedRef.current) {
               hasNavigatedRef.current = true;
@@ -365,7 +369,9 @@ export default function LoadingScreen({ navigation }) {
             }
           }}
         >
-          <Text style={styles.skipActionText}>Skip to Results →</Text>
+          <Text style={styles.skipActionText}>
+            {error ? '← Back to Parameters' : 'Skip to Results →'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -387,7 +393,7 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: 11,
     fontWeight: '800',
-    color: Colors.accent, // #7D4F38 Bronze
+    color: '#E09F67', // Warm high-contrast bronze
     letterSpacing: 1.5,
     marginBottom: 6,
   },
