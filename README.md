@@ -96,9 +96,11 @@ npm run build
 ```
 
 To deploy to Vercel for friends and family:
-1. Import the `workout-generator` directory as a project in [Vercel](https://vercel.com), or run `npx vercel --prod` from `workout-generator/`.
-2. Build Command: `npm run build`
-3. Output Directory: `dist`
+```bash
+cd workout-generator
+npx vercel deploy --prod
+```
+*(Or import the `workout-generator` directory in [Vercel](https://vercel.com) with Build Command `npm run build` and Output Directory `dist`.)*
 
 ---
 
