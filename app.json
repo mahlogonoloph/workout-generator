@@ -1,15 +1,17 @@
 {
   "expo": {
-    "name": "workout-generator",
+    "name": "Fig Workout Generator",
     "slug": "workout-generator",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tennisclub.workoutgenerator"
     },
     "android": {
+      "package": "com.tennisclub.workoutgenerator",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -19,6 +21,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-sharing"
+    ]
   }
 }
