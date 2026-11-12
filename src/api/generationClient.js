@@ -86,7 +86,7 @@ export function filterCandidateExercises({
     return !stresses.some((stress) => normalizedExclusions.includes(stress));
   });
 
-  // Return safe exercises only. Under NO circumstances return poolToFilter when safePool is empty!
+  // Return safe exercises only. do not return poolToFilter when safePool is empty!
   return safePool;
 }
 
