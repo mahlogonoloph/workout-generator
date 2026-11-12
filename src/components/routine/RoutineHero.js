@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import styles from '../../screens/RoutineScreen.styles';
 
 export default function RoutineHero({
@@ -24,13 +24,6 @@ export default function RoutineHero({
             {logistics?.location || 'Commercial Gym'}
           </Text>
         </View>
-        <TouchableOpacity
-          style={styles.badgeSubtle}
-          activeOpacity={0.7}
-          onPress={() => Linking.openURL('https://wger.de')}
-        >
-          <Text style={styles.badgeSubtleText}>wger Open-Source DB ↗</Text>
-        </TouchableOpacity>
         {isEdited && (
           <View style={styles.editedBadge}>
             <Text style={styles.editedBadgeText}>CUSTOMIZED</Text>

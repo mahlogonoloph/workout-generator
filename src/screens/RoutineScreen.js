@@ -312,14 +312,6 @@ export default function RoutineScreen({ navigation }) {
           onResetToOriginal={handleResetToOriginal}
         />
 
-        {/* Feedback Loop & Volume Calibration Card */}
-        <FeedbackCalibrationCard
-          likedCount={likedIds.length}
-          dislikedCount={dislikedIds.length}
-          intensityRating={intensityRating}
-          onSelectIntensity={setIntensityRating}
-        />
-
         {/* Schedule Day Selector Tabs */}
         <DaySelectorTabs
           schedule={schedule}
@@ -330,14 +322,13 @@ export default function RoutineScreen({ navigation }) {
         {/* Active Day Header */}
         <View style={styles.dayHeader}>
           <View style={styles.dayHeaderTitleRow}>
-            <Text style={styles.dayTitle}>{activeDay.dayLabel}</Text>
-            <View style={styles.dayStatsPill}>
-              <Text style={styles.dayStatsPillText}>~{estimatedMinutes} min</Text>
+            <View style={styles.dayHeaderTitleWrap}>
+              <Text style={styles.dayTitle}>{activeDay.dayLabel}</Text>
+              <Text style={styles.daySubtitle}>
+                {activeDay.exercises?.length || 0} Movements • {totalDaySets} Sets • ~{estimatedMinutes} min
+              </Text>
             </View>
           </View>
-          <Text style={styles.daySubtitle}>
-            {activeDay.exercises?.length || 0} Movements • {totalDaySets} Total Sets • Sequenced by Movement Pattern
-          </Text>
         </View>
 
         {/* Collapsible Warmup Card */}
@@ -448,6 +439,14 @@ export default function RoutineScreen({ navigation }) {
             </Text>
           </View>
         </TouchableOpacity>
+
+        {/* Feedback Loop & Volume Calibration Card: Contextually at the end of the session */}
+        <FeedbackCalibrationCard
+          likedCount={likedIds.length}
+          dislikedCount={dislikedIds.length}
+          intensityRating={intensityRating}
+          onSelectIntensity={setIntensityRating}
+        />
 
         {/* Attribution & Health Disclaimer Footer */}
         <RoutineDisclaimer />

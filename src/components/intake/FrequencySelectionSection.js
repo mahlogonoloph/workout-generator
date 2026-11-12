@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import styles from '../../screens/IntakeScreen.styles';
+import { WeeklyCalendarDots } from './IntakeGraphics';
 
 export const FREQUENCY_OPTIONS = [
   { days: 2, label: '2 Days', sub: 'Full Body' },
@@ -30,6 +31,8 @@ export default function FrequencySelectionSection({
                 styles.frequencyPill,
                 isSelected ? styles.frequencyPillSelected : styles.frequencyPillUnselected,
               ]}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.days} days per week, ${item.sub}`}
             >
               <Text
                 style={[
@@ -48,6 +51,7 @@ export default function FrequencySelectionSection({
               >
                 {item.sub}
               </Text>
+              <WeeklyCalendarDots days={item.days} isSelected={isSelected} />
             </TouchableOpacity>
           );
         })}
@@ -55,4 +59,3 @@ export default function FrequencySelectionSection({
     </View>
   );
 }
-

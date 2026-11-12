@@ -64,6 +64,62 @@ export const styles = StyleSheet.create({
   diagramLabelTextApproximation: {
     color: '#E09F67',
   },
+  playMotionBtn: {
+    position: 'absolute',
+    top: 4,
+    right: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3.5,
+    backgroundColor: 'rgba(250, 244, 240, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(250, 244, 240, 0.16)',
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 5,
+    zIndex: 10,
+  },
+  playMotionBtnActive: {
+    backgroundColor: 'rgba(200, 70, 99, 0.22)',
+    borderColor: Colors.primary,
+  },
+  playMotionIcon: {
+    fontSize: 7.5,
+    color: Colors.textSecondary,
+    fontWeight: '800',
+  },
+  playMotionIconActive: {
+    color: Colors.primary,
+  },
+  playMotionText: {
+    fontSize: 7.5,
+    fontWeight: '800',
+    color: Colors.textSecondary,
+    letterSpacing: 0.6,
+  },
+  playMotionTextActive: {
+    color: Colors.primary,
+  },
+  motionPulseIndicator: {
+    position: 'absolute',
+    bottom: 4,
+    right: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3.5,
+  },
+  motionPulseDot: {
+    width: 4.5,
+    height: 4.5,
+    borderRadius: 2.25,
+    backgroundColor: Colors.primary,
+  },
+  motionPhaseText: {
+    fontSize: 7,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 0.5,
+  },
   approxBanner: {
     flexDirection: 'row',
     alignItems: 'center',

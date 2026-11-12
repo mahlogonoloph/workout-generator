@@ -30,7 +30,7 @@ export default function AppNavigator() {
       <Stack.Screen 
         name="Intake" 
         component={IntakeScreen} 
-        options={{ title: 'Configure Routine' }} 
+        options={{ headerShown: false }} 
       />
       <Stack.Screen 
         name="Loading" 
@@ -40,7 +40,7 @@ export default function AppNavigator() {
       <Stack.Screen 
         name="Routine" 
         component={RoutineScreen} 
-        options={{ title: 'Your Plan', headerBackTitle: 'Back' }} 
+        options={{ title: 'Your Routine', headerBackTitle: 'Configure' }} 
       />
     </Stack.Navigator>
   );

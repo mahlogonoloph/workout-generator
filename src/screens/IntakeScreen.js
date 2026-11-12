@@ -13,7 +13,6 @@ import useWorkoutStore from '../store/useWorkoutStore';
 import { estimateWeeklyVolume } from '../api/generationClient';
 import ConfirmModal from '../components/ConfirmModal';
 
-import PurposeHeroBanner from '../components/intake/PurposeHeroBanner';
 import SavedRoutineBanner from '../components/intake/SavedRoutineBanner';
 import ArchitectureMetricBar from '../components/intake/ArchitectureMetricBar';
 import GoalSelectionSection from '../components/intake/GoalSelectionSection';
@@ -67,16 +66,14 @@ export default function IntakeScreen({ navigation }) {
   });
   const estimatedWeeklySets = volumeEstimate.weeklySets;
 
-  // Innovative Animations & Micro-Interactions
+  // Smooth Entrance Animations
   const entranceHeroAnim = useRef(new Animated.Value(0)).current;
   const entranceHeroSlide = useRef(new Animated.Value(14)).current;
   const entranceSectionAnim = useRef(new Animated.Value(0)).current;
-  const beaconPulse = useRef(new Animated.Value(1)).current;
-  const beaconOpacity = useRef(new Animated.Value(0.75)).current;
   const volumeMeterAnim = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
-    // 1. Staggered Entrance
+    // Staggered Entrance
     Animated.parallel([
       Animated.timing(entranceHeroAnim, {
         toValue: 1,
@@ -93,43 +90,11 @@ export default function IntakeScreen({ navigation }) {
       Animated.timing(entranceSectionAnim, {
         toValue: 1,
         duration: 650,
-        delay: 150,
+        delay: 120,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
     ]).start();
-
-    // 2. Kinetic Beacon Pulse (Signaling active engine)
-    Animated.loop(
-      Animated.parallel([
-        Animated.sequence([
-          Animated.timing(beaconPulse, {
-            toValue: 2.2,
-            duration: 1600,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(beaconPulse, {
-            toValue: 1,
-            duration: 0,
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.sequence([
-          Animated.timing(beaconOpacity, {
-            toValue: 0,
-            duration: 1600,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(beaconOpacity, {
-            toValue: 0.75,
-            duration: 0,
-            useNativeDriver: true,
-          }),
-        ]),
-      ])
-    ).start();
   }, []);
 
   // Update volume meter whenever parameters change
@@ -168,15 +133,7 @@ export default function IntakeScreen({ navigation }) {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* App Purpose Hero Banner */}
-        <PurposeHeroBanner
-          entranceHeroAnim={entranceHeroAnim}
-          entranceHeroSlide={entranceHeroSlide}
-          beaconPulse={beaconPulse}
-          beaconOpacity={beaconOpacity}
-        />
-
-        {/* Resume Saved Routine Banner */}
+        {/* Resume Saved Routine Banner (If Active) */}
         <SavedRoutineBanner
           generatedRoutine={generatedRoutine}
           isEdited={isEdited}
@@ -185,7 +142,22 @@ export default function IntakeScreen({ navigation }) {
           onViewPlan={() => navigation.navigate('Routine')}
         />
 
-        {/* Live Biomechanical Architecture Metric Bar */}
+        {/* Clean, Confident Header Hero */}
+        <Animated.View
+          style={[
+            styles.header,
+            {
+              opacity: entranceSectionAnim,
+            },
+          ]}
+        >
+          <Text style={styles.title}>Design Your 8-Week Program</Text>
+          <Text style={styles.subtitle}>
+            Calibrated volume, exercise selection, and joint-safe periodization tailored to your space.
+          </Text>
+        </Animated.View>
+
+        {/* Live Architecture Metric Summary Strip */}
         <ArchitectureMetricBar
           estimatedWeeklySets={estimatedWeeklySets}
           selectedFrequency={selectedFrequency}
@@ -195,21 +167,6 @@ export default function IntakeScreen({ navigation }) {
           entranceHeroAnim={entranceHeroAnim}
           entranceHeroSlide={entranceHeroSlide}
         />
-
-        {/* Header Hero */}
-        <Animated.View
-          style={[
-            styles.header,
-            {
-              opacity: entranceSectionAnim,
-            },
-          ]}
-        >
-          <Text style={styles.title}>Configure Routine</Text>
-          <Text style={styles.subtitle}>
-            Select your training parameters. The engine calculates volume, periodization, and joint-safe exercise paths.
-          </Text>
-        </Animated.View>
 
         {/* Section 1: Primary Training Goal */}
         <GoalSelectionSection

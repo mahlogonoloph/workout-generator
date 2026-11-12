@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import styles from '../../screens/IntakeScreen.styles';
+import { LocationIcon } from './IntakeGraphics';
 
 export const LOCATION_OPTIONS = [
   { id: 'Commercial Gym', title: 'Commercial Gym', desc: 'Full barbells, dumbbells, cables & machines' },
@@ -28,7 +29,12 @@ export default function LocationSelectionSection({
                 styles.goalPill,
                 isSelected ? styles.goalPillSelected : styles.goalPillUnselected,
               ]}
+              accessibilityRole="button"
+              accessibilityLabel={`Select ${item.title}`}
             >
+              <View style={[styles.goalIconBox, isSelected && styles.goalIconBoxSelected]}>
+                <LocationIcon locationId={item.id} isSelected={isSelected} size={32} />
+              </View>
               <View style={styles.pillTextWrap}>
                 <Text
                   style={[
@@ -60,4 +66,3 @@ export default function LocationSelectionSection({
     </View>
   );
 }
-

@@ -11,6 +11,9 @@ export const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
+    maxWidth: 760,
+    width: '100%',
+    alignSelf: 'center',
   },
   purposeHeroBanner: {
     backgroundColor: 'rgba(41, 22, 48, 0.95)',
@@ -103,16 +106,16 @@ export const styles = StyleSheet.create({
   },
   volumeMeterTrack: {
     width: '100%',
-    height: 6,
+    height: 3,
     backgroundColor: Colors.surfaceElevated,
-    borderRadius: 3,
+    borderRadius: 1.5,
     overflow: 'hidden',
     marginBottom: 8,
   },
   volumeMeterFill: {
     height: '100%',
     backgroundColor: Colors.primary,
-    borderRadius: 3,
+    borderRadius: 1.5,
   },
   architectureFooterRow: {
     flexDirection: 'row',
@@ -122,6 +125,11 @@ export const styles = StyleSheet.create({
   architectureFooterText: {
     fontSize: 11,
     color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  architectureFooterSub: {
+    fontSize: 11,
+    color: Colors.textMuted,
     fontWeight: '500',
   },
   architectureShieldText: {
@@ -167,18 +175,34 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     borderRadius: 14,
     borderWidth: 1,
+  },
+  goalIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: Colors.surfaceElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  goalIconBoxSelected: {
+    backgroundColor: 'rgba(200, 70, 99, 0.22)',
+    borderColor: Colors.primary,
   },
   goalPillUnselected: {
     backgroundColor: Colors.surface, // #291630
     borderColor: Colors.border,
   },
   goalPillSelected: {
-    backgroundColor: Colors.primary, // #C84663 Vibrant primary CTA
-    borderColor: 'transparent',
+    backgroundColor: 'rgba(200, 70, 99, 0.12)',
+    borderColor: Colors.primary,
+    borderWidth: 1.5,
   },
   pillTextWrap: {
     flex: 1,
@@ -204,18 +228,21 @@ export const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   goalPillDescSelected: {
-    color: 'rgba(250, 244, 240, 0.85)',
+    color: Colors.textSecondary,
   },
   selectionIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1.5,
   },
   selectionIndicatorInactive: {
     backgroundColor: 'transparent',
+    borderColor: Colors.border,
   },
   selectionIndicatorActive: {
-    backgroundColor: Colors.textPrimary,
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   frequencyRow: {
     flexDirection: 'row',
@@ -235,8 +262,9 @@ export const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   frequencyPillSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: 'transparent',
+    backgroundColor: 'rgba(200, 70, 99, 0.18)',
+    borderColor: Colors.primary,
+    borderWidth: 1.5,
   },
   frequencyPillTitle: {
     fontSize: 15,
@@ -256,7 +284,7 @@ export const styles = StyleSheet.create({
     color: Colors.textMuted,
   },
   frequencyPillSubSelected: {
-    color: 'rgba(250, 244, 240, 0.85)',
+    color: Colors.textSecondary,
   },
   durationRow: {
     flexDirection: 'row',
@@ -275,8 +303,9 @@ export const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   durationPillSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: 'transparent',
+    backgroundColor: 'rgba(200, 70, 99, 0.18)',
+    borderColor: Colors.primary,
+    borderWidth: 1.5,
   },
   durationPillText: {
     fontSize: 13,
@@ -288,6 +317,88 @@ export const styles = StyleSheet.create({
   durationPillTextSelected: {
     color: Colors.textPrimary,
     fontWeight: '700',
+  },
+  durationPillTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  durationPillTitleUnselected: {
+    color: Colors.textPrimary,
+  },
+  durationPillTitleSelected: {
+    color: Colors.textPrimary,
+  },
+  durationPillSub: {
+    fontSize: 10,
+    marginTop: 2,
+  },
+  durationPillSubUnselected: {
+    color: Colors.textMuted,
+  },
+  durationPillSubSelected: {
+    color: Colors.textSecondary,
+  },
+  muscleTargetingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    gap: 14,
+  },
+  muscleAnatomyBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  anatomyBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: Colors.textMuted,
+    marginTop: 4,
+    letterSpacing: 0.6,
+  },
+  muscleChipsRightCol: {
+    flex: 1,
+  },
+  muscleTargetingNote: {
+    fontSize: 11.5,
+    color: Colors.textSecondary,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  jointHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 8,
+  },
+  jointHeaderTitles: {
+    flex: 1,
+  },
+  jointShieldBadge: {
+    backgroundColor: 'rgba(78, 159, 116, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(78, 159, 116, 0.3)',
+    marginTop: 2,
+  },
+  jointShieldBadgeText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#4E9F74',
+  },
+  architectureShieldBadge: {
+    backgroundColor: 'rgba(78, 159, 116, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(78, 159, 116, 0.3)',
   },
   jointChipsRow: {
     flexDirection: 'row',
@@ -417,12 +528,13 @@ export const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   attributionFooterCard: {
-    backgroundColor: 'rgba(41, 22, 48, 0.6)',
+    backgroundColor: 'transparent',
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    marginTop: 8,
   },
   attributionHeaderRow: {
     flexDirection: 'row',
@@ -462,6 +574,7 @@ export const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    alignItems: 'center',
     backgroundColor: Colors.background,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
@@ -471,6 +584,8 @@ export const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: Colors.primary, // #C84663
     height: 54,
+    maxWidth: 720,
+    width: '100%',
     borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',

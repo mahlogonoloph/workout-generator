@@ -11,6 +11,9 @@ export const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
+    maxWidth: 760,
+    width: '100%',
+    alignSelf: 'center',
   },
   heroSection: {
     marginBottom: 16,
@@ -205,13 +208,17 @@ export const styles = StyleSheet.create({
     color: 'rgba(250, 244, 240, 0.85)',
   },
   dayHeader: {
-    marginBottom: 14,
+    marginBottom: 16,
   },
   dayHeaderTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 2,
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  dayHeaderTitleWrap: {
+    flex: 1,
   },
   dayStatsPill: {
     backgroundColor: Colors.surfaceElevated,
@@ -692,6 +699,28 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.primary,
   },
+  expandedDetailsContainer: {
+    marginTop: 2,
+    gap: 10,
+  },
+  secondaryMusclesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 4,
+    marginTop: -2,
+    marginBottom: 4,
+  },
+  secondaryMusclesLabel: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: Colors.textMuted,
+  },
+  secondaryMusclesText: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
   cuesContainer: {
     backgroundColor: 'rgba(31, 17, 36, 0.45)',
     borderRadius: 10,
@@ -823,6 +852,7 @@ export const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    alignItems: 'center',
     backgroundColor: Colors.background,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
@@ -833,6 +863,8 @@ export const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: Colors.primary,
     height: 52,
+    maxWidth: 720,
+    width: '100%',
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',

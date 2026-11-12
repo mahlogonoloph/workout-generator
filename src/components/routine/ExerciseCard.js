@@ -32,6 +32,9 @@ export default function ExerciseCard({
   const catalogKey = exercise.catalogId || exercise.id;
   const isHeartAnimating = animatingHeartKey === catalogKey;
 
+  const primaryMuscle = (exercise.primaryMuscleLabels || [])[0];
+  const movementPattern = exercise.movementPatternLabel;
+
   return (
     <View style={styles.exerciseCard}>
       {/* Swapped Notification Banner */}
@@ -81,8 +84,23 @@ export default function ExerciseCard({
         </View>
 
         <View style={styles.exerciseTitleBlock}>
-          <Text style={styles.exerciseName}>{exercise.name}</Text>
+          <Text style={styles.exerciseName} numberOfLines={2}>
+            {exercise.name}
+          </Text>
+          
           <View style={styles.taxonomyMetaRow}>
+            {primaryMuscle && (
+              <View style={styles.musclePrimaryBadge}>
+                <Text style={styles.musclePrimaryBadgeText}>{primaryMuscle}</Text>
+              </View>
+            )}
+            {movementPattern && (
+              <View style={styles.patternBadge}>
+                <Text style={styles.patternBadgeText}>
+                  {movementPattern.toUpperCase()}
+                </Text>
+              </View>
+            )}
             {exercise.isFocusBoosted && (
               <View style={styles.focusBoostBadge}>
                 <Text style={styles.focusBoostBadgeText}>★ FOCUS +1 SET</Text>
@@ -93,23 +111,6 @@ export default function ExerciseCard({
                 <Text style={styles.stretchBadgeText}>↔ STRETCH</Text>
               </View>
             )}
-            {exercise.movementPatternLabel && (
-              <View style={styles.patternBadge}>
-                <Text style={styles.patternBadgeText}>
-                  {exercise.movementPatternLabel.toUpperCase()}
-                </Text>
-              </View>
-            )}
-            {(exercise.primaryMuscleLabels || []).map((mLabel, mIdx) => (
-              <View key={mIdx} style={styles.musclePrimaryBadge}>
-                <Text style={styles.musclePrimaryBadgeText}>{mLabel}</Text>
-              </View>
-            ))}
-            {(exercise.secondaryMuscleLabels || []).slice(0, 2).map((sLabel, sIdx) => (
-              <View key={sIdx} style={styles.muscleSecondaryBadge}>
-                <Text style={styles.muscleSecondaryBadgeText}>{sLabel}</Text>
-              </View>
-            ))}
           </View>
         </View>
 
@@ -119,6 +120,7 @@ export default function ExerciseCard({
             activeOpacity={0.7}
             onPress={() => onLikeToggle(catalogKey)}
             style={[styles.iconActionBtn, isLiked && styles.iconActionBtnLiked]}
+            accessibilityLabel="Favorite exercise"
           >
             <Animated.View
               style={
@@ -178,52 +180,66 @@ export default function ExerciseCard({
         />
       )}
 
-      {/* Visual SVG Diagram + Anatomical Muscle Map */}
-      <ExerciseIllustrationSvg
-        svgType={exercise.svgType || 'squat'}
-        svgAccuracy={exercise.svgAccuracy || 'exact'}
-        svgNote={exercise.svgNote || null}
-        primaryMuscles={exercise.primaryMuscles || []}
-        secondaryMuscles={exercise.secondaryMuscles || []}
-      />
-
-      {/* Prescription Metrics Bar (Tappable to Edit) */}
+      {/* Primary Hero Data: Prescription Metrics Bar (Tappable to Edit) */}
       <PrescriptionBar
         exercise={exercise}
         onPress={onOpenEditModal}
       />
 
-      {/* Form & Execution Cues (So Users Never Need to Google the Exercise) */}
-      {exercise.formCues && exercise.formCues.length > 0 && (
-        <View style={styles.cuesContainer}>
-          <Text style={styles.cuesHeader}>EXECUTION & FORM CUES</Text>
-          {exercise.formCues.map((cue, cIdx) => (
-            <View key={cIdx} style={styles.cueRow}>
-              <Text style={styles.cueStepNum}>{cIdx + 1}.</Text>
-              <Text style={styles.cueText}>{cue}</Text>
-            </View>
-          ))}
-        </View>
-      )}
+      {/* Direct Uncollapsed Exercise Details: Diagrams, Form Cues & Substitutions */}
+      <View style={styles.expandedDetailsContainer}>
+        {/* Visual SVG Diagram (with playable biomechanical motion) + Anatomical Muscle Map */}
+        <ExerciseIllustrationSvg
+          svgType={exercise.svgType || 'squat'}
+          svgAccuracy={exercise.svgAccuracy || 'exact'}
+          svgNote={exercise.svgNote || null}
+          primaryMuscles={exercise.primaryMuscles || []}
+          secondaryMuscles={exercise.secondaryMuscles || []}
+          compact={true}
+        />
 
-      {/* Substitution Fallbacks (Filtered for User Setup & Joint Safety) */}
-      {safeSubstitutions.length > 0 && (
-        <View style={styles.subsContainer}>
-          <Text style={styles.subsHeader}>DIRECT SUBSTITUTIONS</Text>
-          <View style={styles.subsRow}>
-            {safeSubstitutions.map((sub, sIdx) => (
-              <TouchableOpacity
-                key={sIdx}
-                style={styles.subTag}
-                activeOpacity={0.7}
-                onPress={() => onDirectSubstitutionTap(sub)}
-              >
-                <Text style={styles.subTagText}>⇄ {sub}</Text>
-              </TouchableOpacity>
+        {/* Form & Execution Cues */}
+        {exercise.formCues && exercise.formCues.length > 0 && (
+          <View style={styles.cuesContainer}>
+            <Text style={styles.cuesHeader}>EXECUTION & FORM CUES</Text>
+            {exercise.formCues.map((cue, cIdx) => (
+              <View key={cIdx} style={styles.cueRow}>
+                <Text style={styles.cueStepNum}>{cIdx + 1}.</Text>
+                <Text style={styles.cueText}>{cue}</Text>
+              </View>
             ))}
           </View>
-        </View>
-      )}
+        )}
+
+        {/* Secondary Muscles Breakdown */}
+        {exercise.secondaryMuscleLabels && exercise.secondaryMuscleLabels.length > 0 && (
+          <View style={styles.secondaryMusclesRow}>
+            <Text style={styles.secondaryMusclesLabel}>Secondary Synergy:</Text>
+            <Text style={styles.secondaryMusclesText}>
+              {exercise.secondaryMuscleLabels.join(', ')}
+            </Text>
+          </View>
+        )}
+
+        {/* Substitution Fallbacks (Filtered for User Setup & Joint Safety) */}
+        {safeSubstitutions.length > 0 && (
+          <View style={styles.subsContainer}>
+            <Text style={styles.subsHeader}>DIRECT SUBSTITUTIONS</Text>
+            <View style={styles.subsRow}>
+              {safeSubstitutions.map((sub, sIdx) => (
+                <TouchableOpacity
+                  key={sIdx}
+                  style={styles.subTag}
+                  activeOpacity={0.7}
+                  onPress={() => onDirectSubstitutionTap(sub)}
+                >
+                  <Text style={styles.subTagText}>⇄ {sub}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+      </View>
     </View>
   );
 }

@@ -3,10 +3,10 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import styles from '../../screens/IntakeScreen.styles';
 
 export const DURATION_OPTIONS = [
-  { minutes: 30, label: '30 min' },
-  { minutes: 45, label: '45 min' },
-  { minutes: 60, label: '60 min' },
-  { minutes: 75, label: '75 min' },
+  { minutes: 30, label: '30m', desc: 'Express' },
+  { minutes: 45, label: '45m', desc: 'Moderate' },
+  { minutes: 60, label: '60m', desc: 'Optimal' },
+  { minutes: 75, label: '75m', desc: 'Extended' },
 ];
 
 export default function DurationSelectionSection({
@@ -29,14 +29,24 @@ export default function DurationSelectionSection({
                 styles.durationPill,
                 isSelected ? styles.durationPillSelected : styles.durationPillUnselected,
               ]}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.label} (${item.desc}) session`}
             >
               <Text
                 style={[
-                  styles.durationPillText,
-                  isSelected ? styles.durationPillTextSelected : styles.durationPillTextUnselected,
+                  styles.durationPillTitle,
+                  isSelected ? styles.durationPillTitleSelected : styles.durationPillTitleUnselected,
                 ]}
               >
                 {item.label}
+              </Text>
+              <Text
+                style={[
+                  styles.durationPillSub,
+                  isSelected ? styles.durationPillSubSelected : styles.durationPillSubUnselected,
+                ]}
+              >
+                {item.desc}
               </Text>
             </TouchableOpacity>
           );
@@ -45,4 +55,3 @@ export default function DurationSelectionSection({
     </View>
   );
 }
-

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Animated } from 'react-native';
 import styles from '../../screens/IntakeScreen.styles';
+import { PeriodizationWaveChart } from './IntakeGraphics';
 
 export default function ArchitectureMetricBar({
   estimatedWeeklySets = 0,
@@ -23,32 +24,25 @@ export default function ArchitectureMetricBar({
     >
       <View style={styles.architectureHeaderRow}>
         <View style={styles.architectureTitleWrap}>
-          <Text style={styles.architectureSub}>CALCULATED ARCHITECTURE</Text>
+          <Text style={styles.architectureSub}>LIVE BLUEPRINT SUMMARY</Text>
           <Text style={styles.architectureMainVal}>
-            ~{estimatedWeeklySets} Sets / Wk • {selectedFrequency} Days/Wk
+            ~{estimatedWeeklySets} Sets / Wk • {selectedFrequency} Days • {selectedLocation}
           </Text>
         </View>
-        <View style={styles.architectureBadge}>
-          <Text style={styles.architectureBadgeText}>{selectedLocation}</Text>
+        <View style={styles.architectureShieldBadge}>
+          <Text style={styles.architectureShieldText}>
+            {selectedExclusions.length > 0
+              ? `🛡 ${selectedExclusions.length} Shield(s)`
+              : '🛡 Joint Safety Active'}
+          </Text>
         </View>
       </View>
 
-      {/* Volume progress meter */}
-      <View style={styles.volumeMeterTrack}>
-        <Animated.View style={[styles.volumeMeterFill, { width: volumeMeterWidth }]} />
-      </View>
-
-      <View style={styles.architectureFooterRow}>
-        <Text style={styles.architectureFooterText}>
-          8-Week Total: ~{estimatedWeeklySets * 8} Working Sets
-        </Text>
-        <Text style={styles.architectureShieldText}>
-          {selectedExclusions.length > 0
-            ? `🛡 ${selectedExclusions.length} Joint Shield(s)`
-            : '🛡 Joint Safety Active'}
-        </Text>
-      </View>
+      {/* 8-Week Sports Science Periodization Wave Visual Chart */}
+      <PeriodizationWaveChart
+        estimatedWeeklySets={estimatedWeeklySets}
+        selectedFrequency={selectedFrequency}
+      />
     </Animated.View>
   );
 }
-

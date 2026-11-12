@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 import AnatomyMuscleMap from './illustration/AnatomyMuscleMap';
-import renderMovementVector from './illustration/ExerciseMovementVectors';
+import renderMovementVector, { MOTION_TYPES } from './illustration/ExerciseMovementVectors';
 import styles from './illustration/ExerciseIllustrationSvg.styles';
 
 export { getExercisePdfSvgMarkup } from './illustration/exercisePdfSvg';
@@ -53,6 +53,7 @@ export const KNOWN_SVG_TYPES = new Set([
 /**
  * Renders both:
  * 1) A Biomechanical Exercise Posture & Force-Vector SVG Diagram
+ *    - Interactive PLAY/PAUSE button previews the rep using a constant-bone-length skeleton (no stretching limbs)
  *    - Automatically flags any pattern-level approximation with an amber "≈ PATTERN GUIDE" badge & note
  * 2) A wger-inspired Anatomical Muscle Map highlighting Primary (#C84663) & Secondary (#E09F67) muscles
  */
@@ -66,6 +67,51 @@ export default function ExerciseIllustrationSvg({
 }) {
   const isKnownType = KNOWN_SVG_TYPES.has(svgType);
   const isApproximation = svgAccuracy === 'pattern' || !isKnownType || Boolean(svgNote);
+  // Only movements with a real skeleton motion model can be played (isometric holds / unknown types stay static)
+  const canPlay = isKnownType && MOTION_TYPES.has(svgType);
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [motionProgress, setMotionProgress] = useState(0);
+  const animRef = useRef(null);
+  const startTimeRef = useRef(null);
+
+  useEffect(() => {
+    if (!isPlaying) {
+      if (animRef.current && typeof cancelAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(animRef.current);
+      }
+      setMotionProgress(0);
+      startTimeRef.current = null;
+      return;
+    }
+
+    const DURATION = 2400; // 2.4 seconds per complete rep cycle
+    const step = (timestamp) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const elapsed = timestamp - startTimeRef.current;
+      // Smooth sinusoidal phase: 0 (start) -> 1 (peak displacement) -> 0 (finish)
+      const phase = (1 - Math.cos(((elapsed % DURATION) / DURATION) * 2 * Math.PI)) / 2;
+      setMotionProgress(phase);
+      if (typeof requestAnimationFrame !== 'undefined') {
+        animRef.current = requestAnimationFrame(step);
+      }
+    };
+
+    if (typeof requestAnimationFrame !== 'undefined') {
+      animRef.current = requestAnimationFrame(step);
+    }
+
+    return () => {
+      if (animRef.current && typeof cancelAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(animRef.current);
+      }
+      startTimeRef.current = null;
+    };
+  }, [isPlaying]);
+
+  const togglePlay = () => {
+    setIsPlaying((prev) => !prev);
+  };
 
   return (
     <View style={styles.outerWrap}>
@@ -77,6 +123,7 @@ export default function ExerciseIllustrationSvg({
             isApproximation && styles.diagramBoxApproximation,
           ]}
         >
+          {/* Header Tag */}
           <View
             style={[
               styles.diagramLabelTag,
@@ -92,6 +139,26 @@ export default function ExerciseIllustrationSvg({
               {isApproximation ? '≈ PATTERN GUIDE' : 'FORM & PATH'}
             </Text>
           </View>
+
+          {/* Interactive Play Motion Button */}
+          {canPlay && (
+          <TouchableOpacity
+            style={[styles.playMotionBtn, isPlaying && styles.playMotionBtnActive]}
+            activeOpacity={0.75}
+            onPress={togglePlay}
+            accessibilityRole="button"
+            accessibilityLabel={isPlaying ? 'Pause movement motion preview' : 'Play movement motion preview'}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+          >
+            <Text style={[styles.playMotionIcon, isPlaying && styles.playMotionIconActive]}>
+              {isPlaying ? '❚❚' : '▶'}
+            </Text>
+            <Text style={[styles.playMotionText, isPlaying && styles.playMotionTextActive]}>
+              {isPlaying ? 'PAUSE' : 'PLAY'}
+            </Text>
+          </TouchableOpacity>
+          )}
+
           <Svg
             width={compact ? 92 : 120}
             height={compact ? 84 : 104}
@@ -107,8 +174,9 @@ export default function ExerciseIllustrationSvg({
               strokeWidth="1.5"
               strokeDasharray="3,3"
             />
-            {renderMovementVector(svgType)}
+            {renderMovementVector(svgType, motionProgress)}
           </Svg>
+
         </View>
 
         {/* Right Panel: wger-Style Anatomical Muscle Highlight Map */}
