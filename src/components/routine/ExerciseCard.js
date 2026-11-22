@@ -148,7 +148,7 @@ export default function ExerciseCard({
               isSwapDrawerOpen && styles.swapActionBtnActive,
             ]}
           >
-            <Text style={styles.swapActionText}>⇄ Swap</Text>
+            <Text style={[styles.swapActionText, isSwapDrawerOpen && styles.swapActionTextActive]}>⇄ Swap</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

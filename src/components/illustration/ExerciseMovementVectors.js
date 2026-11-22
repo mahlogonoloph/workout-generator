@@ -5,11 +5,11 @@ import { solvePose, MOTION_TYPES } from './exerciseRigPoses';
 export { MOTION_TYPES };
 
 const COLORS = {
-  b: '#FAF4F0', // bone
-  j: '#C84663', // joint / load
-  e: '#96839B', // equipment
-  v: '#C84663', // force vector
-  s: 'rgba(250, 244, 240, 0.45)', // secondary (far-side) limb
+  b: '#FFFFFF', // bone
+  j: '#D7FF35', // joint / load (Acid Lime)
+  e: '#B96BC7', // equipment (Fig Orchid)
+  v: '#D7FF35', // force vector (Acid Lime)
+  s: 'rgba(255, 255, 255, 0.42)', // secondary (far-side) limb
 };
 
 function renderPrim(q, key) {

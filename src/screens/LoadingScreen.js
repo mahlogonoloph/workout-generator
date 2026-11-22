@@ -267,13 +267,13 @@ export default function LoadingScreen({ navigation }) {
                 cx={105}
                 cy={105}
                 r={96}
-                stroke="rgba(200, 70, 99, 0.38)"
+                stroke="rgba(215, 255, 53, 0.34)"
                 strokeWidth={2}
                 strokeDasharray="45 18 10 18"
                 fill="none"
               />
               <Circle cx={105} cy={9} r={4.5} fill={Colors.primary} />
-              <Circle cx={105} cy={201} r={3} fill="#E09F67" />
+              <Circle cx={105} cy={201} r={3} fill={Colors.accent} />
             </Svg>
           </Animated.View>
 
@@ -289,12 +289,12 @@ export default function LoadingScreen({ navigation }) {
                 cx={82}
                 cy={82}
                 r={74}
-                stroke="rgba(224, 159, 103, 0.45)"
+                stroke="rgba(185, 107, 199, 0.45)"
                 strokeWidth={1.5}
                 strokeDasharray="28 14 6 14"
                 fill="none"
               />
-              <Circle cx={8} cy={82} r={3.5} fill="#FAF4F0" />
+              <Circle cx={8} cy={82} r={3.5} fill={Colors.textPrimary} />
               <Circle cx={156} cy={82} r={3} fill={Colors.primary} />
             </Svg>
           </Animated.View>

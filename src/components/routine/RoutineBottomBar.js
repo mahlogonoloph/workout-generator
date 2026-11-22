@@ -19,7 +19,7 @@ export default function RoutineBottomBar({
       >
         {isDownloading ? (
           <View style={styles.buttonContentRow}>
-            <ActivityIndicator size="small" color={Colors.textPrimary} />
+            <ActivityIndicator size="small" color={Colors.primaryInk} />
             <Text style={styles.primaryButtonText}>Generating PDF...</Text>
           </View>
         ) : (

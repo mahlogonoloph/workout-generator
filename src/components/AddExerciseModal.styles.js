@@ -132,7 +132,7 @@ export const styles = StyleSheet.create({
     marginBottom: 6,
   },
   categoryPill: {
-    backgroundColor: 'rgba(200, 70, 99, 0.12)',
+    backgroundColor: Colors.primarySubtle,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -189,7 +189,7 @@ export const styles = StyleSheet.create({
   addBtnText: {
     fontSize: 12,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: Colors.primaryInk,
   },
   addBtnTextDisabled: {
     color: Colors.textMuted,
@@ -214,20 +214,20 @@ export const styles = StyleSheet.create({
   currentExerciseCard: {
     opacity: 0.55,
     borderWidth: 1,
-    borderColor: 'rgba(200, 70, 99, 0.4)',
-    backgroundColor: 'rgba(31, 17, 36, 0.5)',
+    borderColor: Colors.primaryBorder,
+    backgroundColor: Colors.surfaceRecessed,
   },
   swapSelectBtn: {
-    backgroundColor: Colors.secondary || '#913D59',
+    backgroundColor: Colors.primary,
   },
   swapBannerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(200, 70, 99, 0.12)',
+    backgroundColor: Colors.primarySubtle,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(200, 70, 99, 0.25)',
+    borderBottomColor: Colors.primaryBorder,
     gap: 12,
   },
   swapBannerBadge: {
@@ -239,7 +239,7 @@ export const styles = StyleSheet.create({
   swapBannerBadgeText: {
     fontSize: 10,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: Colors.primaryInk,
     letterSpacing: 0.6,
   },
   swapBannerTextWrap: {

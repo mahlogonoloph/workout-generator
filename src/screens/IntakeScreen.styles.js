@@ -1,173 +1,396 @@
-import { StyleSheet } from 'react-native';
-import { Colors } from '../theme/colors';
+import { StyleSheet, Platform } from 'react-native';
+import { Colors, Radii } from '../theme/colors';
+
+const glassCardWeb = Platform.select({
+  web: {
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+  },
+  default: {},
+});
 
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.background, // #1F1124 Deep plum background
+    backgroundColor: Colors.background,
+  },
+  heroBackdropWrap: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 640,
+    overflow: 'hidden',
+  },
+  heroBackdropImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroBackdropImageInner: {
+    opacity: 0.92,
+  },
+  heroBackdropSvg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  heroBackdropGradientWeb: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    ...Platform.select({
+      web: {
+        backgroundImage:
+          'linear-gradient(180deg, rgba(25,7,39,0.52) 0%, rgba(25,7,39,0.18) 42%, rgba(25,7,39,0.72) 82%, #190727 100%)',
+      },
+      default: {
+        backgroundColor: 'rgba(25, 7, 39, 0.52)',
+      },
+    }),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    maxWidth: 760,
+    paddingHorizontal: 16,
+    maxWidth: 680,
     width: '100%',
     alignSelf: 'center',
   },
-  purposeHeroBanner: {
-    backgroundColor: 'rgba(41, 22, 48, 0.95)',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(200, 70, 99, 0.35)',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 3,
+
+  // Top Header / Saved Blueprint Banner (Figma 1001:281)
+  topHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    paddingTop: 12,
+    marginBottom: 88,
+    gap: 14,
   },
-  purposeTagRow: {
+  topHeaderRowCompact: {
+    marginBottom: 48,
+  },
+  topHeaderInfo: {
+    flex: 1,
+  },
+  topHeaderBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
     gap: 8,
+    marginBottom: 8,
   },
-  purposeBeaconDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+  eyebrowWide: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    letterSpacing: 2.6,
+    textTransform: 'uppercase',
   },
-  purposeBeaconPulse: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: Colors.primary,
-  },
-  purposeTagLabel: {
-    fontSize: 10,
+  eyebrowLime: {
+    fontSize: 9,
     fontWeight: '800',
     color: Colors.primary,
-    letterSpacing: 1.1,
+    letterSpacing: 2.2,
+    textTransform: 'uppercase',
   },
-  purposeStatementText: {
-    fontSize: 15,
-    lineHeight: 22,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    letterSpacing: -0.2,
-  },
-  architectureCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 24,
+  savedEditedBadge: {
+    backgroundColor: Colors.primarySubtle,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.primaryBorder,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
-  architectureHeaderRow: {
+  savedEditedBadgeText: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 1.2,
+  },
+  topHeaderTitle: {
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    letterSpacing: -0.4,
+    marginBottom: 8,
+  },
+  topHeaderMeta: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: Colors.textSecondary,
+    maxWidth: 240,
+  },
+  viewPlanBtn: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    borderRadius: Radii.control,
+    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewPlanBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: Colors.primaryInk,
+    letterSpacing: -0.1,
+  },
+
+  // Frosted Glass Blueprint Card (Figma 1001:94)
+  glassBlueprintCard: {
+    backgroundColor: Platform.OS === 'web' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(35, 13, 53, 0.84)',
+    borderRadius: Radii.card,
+    padding: 20,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+    ...glassCardWeb,
+  },
+  glassHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
+    gap: 12,
   },
-  architectureTitleWrap: {
+  glassTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    letterSpacing: -0.3,
     flex: 1,
   },
-  architectureSub: {
+  glassSubRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 16,
+  },
+  glassSubtitle: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    color: Colors.textSecondary,
+    flex: 1,
+    maxWidth: 220,
+  },
+  jointSafetyTag: {
     fontSize: 9,
     fontWeight: '800',
-    color: Colors.textMuted,
-    letterSpacing: 0.9,
-    marginBottom: 2,
+    color: Colors.primary,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
   },
-  architectureMainVal: {
-    fontSize: 14,
+  glassDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    marginBottom: 16,
+  },
+  glassSplitRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 14,
+  },
+  chartWell: {
+    flex: 1,
+    minHeight: 98,
+    backgroundColor: 'rgba(25, 7, 39, 0.38)',
+    borderRadius: Radii.control,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  summaryCol: {
+    flex: 1.08,
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  summaryEyebrow: {
+    fontSize: 8.5,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    letterSpacing: 2.2,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  summaryMainVal: {
+    fontSize: 12.5,
+    lineHeight: 17,
     fontWeight: '700',
     color: Colors.textPrimary,
   },
-  architectureBadge: {
-    backgroundColor: Colors.surfaceElevated,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: Colors.border,
+  telemetryList: {
+    gap: 4,
   },
-  architectureBadgeText: {
+  telemetryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  telemetryCodeWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    minWidth: 22,
+  },
+  telemetryCode: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  telemetryText: {
     fontSize: 10,
-    fontWeight: '700',
-    color: '#E09F67',
+    color: Colors.textSecondary,
+    flex: 1,
   },
-  volumeMeterTrack: {
+
+  // Goal Selection Cascading Pages Deck (Figma 1001:96 + 1001:282 + 1001:326)
+  goalDeckSection: {
+    marginBottom: 28,
+  },
+  goalDeckRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 6,
+    height: 222,
     width: '100%',
-    height: 3,
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: 1.5,
-    overflow: 'hidden',
-    marginBottom: 8,
   },
-  volumeMeterFill: {
+  goalCascadePage: {
     height: '100%',
-    backgroundColor: Colors.primary,
-    borderRadius: 1.5,
+    borderRadius: Radii.card,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  architectureFooterRow: {
+  goalSpineLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  goalSpineTouchable: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+  },
+  goalSpineLabelWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 140,
+    transform: [{ rotate: '-90deg' }],
+  },
+  goalSpineLabel: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  goalExpandedLayer: {
+    flex: 1,
+    padding: 18,
+    justifyContent: 'space-between',
+  },
+  goalHeroTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
   },
-  architectureFooterText: {
-    fontSize: 11,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  architectureFooterSub: {
-    fontSize: 11,
-    color: Colors.textMuted,
-    fontWeight: '500',
-  },
-  architectureShieldText: {
-    fontSize: 11,
-    color: Colors.success || '#4E9F74',
-    fontWeight: '700',
-  },
-  header: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 30,
+  goalHeroEyebrow: {
+    fontSize: 8.5,
     fontWeight: '800',
-    color: Colors.textPrimary, // #FAF4F0 Off-white
-    letterSpacing: -0.6,
-    marginBottom: 8,
+    color: Colors.primaryInk,
+    letterSpacing: 2.2,
+    textTransform: 'uppercase',
   },
-  subtitle: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: Colors.textSecondary, // #C5B5C9
+  goalHeroCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
   },
-  section: {
-    marginBottom: 28,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    letterSpacing: -0.2,
+  goalHeroTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: Colors.primaryInk,
+    letterSpacing: -0.3,
+    textAlign: 'center',
+    marginTop: 10,
     marginBottom: 4,
   },
-  sectionSubtitle: {
-    fontSize: 13,
+  goalHeroDesc: {
+    fontSize: 11,
+    lineHeight: 15,
+    color: 'rgba(25, 7, 39, 0.78)',
+    textAlign: 'center',
+    maxWidth: 184,
+  },
+  goalDotsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingTop: 2,
+  },
+  goalDotTouch: {
+    padding: 4,
+  },
+  goalDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
+  goalDotActive: {
+    width: 14,
+  },
+
+  // Standard Section Chrome
+  section: {
+    marginBottom: 26,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    gap: 10,
+  },
+  sectionEyebrow: {
+    fontSize: 9,
+    fontWeight: '700',
     color: Colors.textMuted,
-    lineHeight: 18,
+    letterSpacing: 2.4,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    letterSpacing: -0.3,
+    marginBottom: 3,
+  },
+  sectionSubtitle: {
+    fontSize: 12.5,
+    color: Colors.textMuted,
+    lineHeight: 17,
     marginBottom: 12,
   },
+
+  // Selection Cards (Environment)
   verticalPillsContainer: {
     gap: 8,
   },
@@ -175,15 +398,16 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 13,
     paddingHorizontal: 14,
-    borderRadius: 14,
+    borderRadius: Radii.card,
     borderWidth: 1,
+    minHeight: 68,
   },
   goalIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 42,
+    height: 42,
+    borderRadius: Radii.control,
     backgroundColor: Colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
@@ -192,15 +416,15 @@ export const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   goalIconBoxSelected: {
-    backgroundColor: 'rgba(200, 70, 99, 0.22)',
+    backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
   goalPillUnselected: {
-    backgroundColor: Colors.surface, // #291630
+    backgroundColor: Colors.surface,
     borderColor: Colors.border,
   },
   goalPillSelected: {
-    backgroundColor: 'rgba(200, 70, 99, 0.12)',
+    backgroundColor: Colors.surfaceElevated,
     borderColor: Colors.primary,
     borderWidth: 1.5,
   },
@@ -209,16 +433,16 @@ export const styles = StyleSheet.create({
     paddingRight: 12,
   },
   goalPillTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 14.5,
+    fontWeight: '700',
     marginBottom: 2,
   },
   goalPillTitleUnselected: {
     color: Colors.textPrimary,
   },
   goalPillTitleSelected: {
-    color: Colors.textPrimary,
-    fontWeight: '700',
+    color: Colors.primary,
+    fontWeight: '800',
   },
   goalPillDesc: {
     fontSize: 12,
@@ -238,112 +462,108 @@ export const styles = StyleSheet.create({
   },
   selectionIndicatorInactive: {
     backgroundColor: 'transparent',
-    borderColor: Colors.border,
+    borderColor: Colors.borderStrong,
   },
   selectionIndicatorActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
+
+  // Frequency & Duration Rows
   frequencyRow: {
     flexDirection: 'row',
     gap: 8,
   },
   frequencyPill: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 13,
     paddingHorizontal: 6,
-    borderRadius: 12,
+    borderRadius: Radii.card,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 70,
   },
   frequencyPillUnselected: {
     backgroundColor: Colors.surface,
     borderColor: Colors.border,
   },
   frequencyPillSelected: {
-    backgroundColor: 'rgba(200, 70, 99, 0.18)',
+    backgroundColor: Colors.primary,
     borderColor: Colors.primary,
-    borderWidth: 1.5,
   },
   frequencyPillTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   frequencyPillTitleUnselected: {
     color: Colors.textPrimary,
   },
   frequencyPillTitleSelected: {
-    color: Colors.textPrimary,
+    color: Colors.primaryInk,
   },
   frequencyPillSub: {
-    fontSize: 10,
+    fontSize: 9.5,
+    fontWeight: '600',
     marginTop: 2,
   },
   frequencyPillSubUnselected: {
     color: Colors.textMuted,
   },
   frequencyPillSubSelected: {
-    color: Colors.textSecondary,
+    color: 'rgba(25, 7, 39, 0.78)',
   },
+
   durationRow: {
     flexDirection: 'row',
     gap: 8,
   },
   durationPill: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 13,
+    borderRadius: Radii.card,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 62,
   },
   durationPillUnselected: {
     backgroundColor: Colors.surface,
     borderColor: Colors.border,
   },
   durationPillSelected: {
-    backgroundColor: 'rgba(200, 70, 99, 0.18)',
+    backgroundColor: Colors.primary,
     borderColor: Colors.primary,
-    borderWidth: 1.5,
-  },
-  durationPillText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  durationPillTextUnselected: {
-    color: Colors.textPrimary,
-  },
-  durationPillTextSelected: {
-    color: Colors.textPrimary,
-    fontWeight: '700',
   },
   durationPillTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   durationPillTitleUnselected: {
     color: Colors.textPrimary,
   },
   durationPillTitleSelected: {
-    color: Colors.textPrimary,
+    color: Colors.primaryInk,
   },
   durationPillSub: {
     fontSize: 10,
+    fontWeight: '600',
     marginTop: 2,
   },
   durationPillSubUnselected: {
     color: Colors.textMuted,
   },
   durationPillSubSelected: {
-    color: Colors.textSecondary,
+    color: 'rgba(25, 7, 39, 0.78)',
   },
+
+  // Muscle Targeting & Anatomy
   muscleTargetingCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.surface,
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: Radii.card,
+    padding: 16,
     borderWidth: 1,
     borderColor: Colors.border,
     gap: 14,
@@ -353,11 +573,12 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   anatomyBadgeText: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: '800',
     color: Colors.textMuted,
-    marginTop: 4,
-    letterSpacing: 0.6,
+    marginTop: 6,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
   },
   muscleChipsRightCol: {
     flex: 1,
@@ -365,40 +586,36 @@ export const styles = StyleSheet.create({
   muscleTargetingNote: {
     fontSize: 11.5,
     color: Colors.textSecondary,
-    marginBottom: 8,
+    marginBottom: 10,
     fontWeight: '500',
   },
+
+  // Joint Exclusions
   jointHeaderRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 10,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   jointHeaderTitles: {
     flex: 1,
   },
   jointShieldBadge: {
-    backgroundColor: 'rgba(78, 159, 116, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    backgroundColor: Colors.primarySubtle,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: Radii.badge,
     borderWidth: 1,
-    borderColor: 'rgba(78, 159, 116, 0.3)',
+    borderColor: Colors.primaryBorder,
     marginTop: 2,
   },
   jointShieldBadgeText: {
-    fontSize: 10.5,
-    fontWeight: '700',
-    color: '#4E9F74',
-  },
-  architectureShieldBadge: {
-    backgroundColor: 'rgba(78, 159, 116, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(78, 159, 116, 0.3)',
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   jointChipsRow: {
     flexDirection: 'row',
@@ -406,44 +623,48 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   jointChip: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 13,
+    borderRadius: Radii.control,
     borderWidth: 1,
+    minHeight: 38,
+    justifyContent: 'center',
   },
   jointChipSafe: {
     backgroundColor: Colors.surface,
     borderColor: Colors.border,
   },
   jointChipExcluded: {
-    backgroundColor: 'rgba(200, 70, 99, 0.16)',
-    borderColor: Colors.primary,
+    backgroundColor: 'rgba(255, 107, 107, 0.14)',
+    borderColor: Colors.error,
   },
   jointChipText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   jointChipTextSafe: {
     color: Colors.textSecondary,
   },
   jointChipTextExcluded: {
-    color: Colors.primary,
+    color: Colors.error,
   },
   focusChipSelected: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
   focusChipTextSelected: {
-    color: Colors.textPrimary,
-    fontWeight: '700',
+    color: Colors.primaryInk,
+    fontWeight: '800',
   },
+
+  // Feedback Memory Card
   feedbackMemoryCard: {
     backgroundColor: Colors.surface,
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: Radii.card,
+    padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(200, 70, 99, 0.35)',
+    borderColor: Colors.primaryBorder,
   },
   feedbackMemoryHeader: {
     flexDirection: 'row',
@@ -452,9 +673,10 @@ export const styles = StyleSheet.create({
     marginBottom: 6,
   },
   feedbackMemoryTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '800',
     color: Colors.primary,
+    letterSpacing: 0.4,
   },
   feedbackResetBtn: {
     fontSize: 11,
@@ -467,70 +689,12 @@ export const styles = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 18,
   },
-  savedRoutineBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    gap: 12,
-  },
-  savedRoutineInfo: {
-    flex: 1,
-  },
-  savedRoutineBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
-  savedRoutineEyebrow: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: Colors.primary,
-    letterSpacing: 0.9,
-  },
-  savedEditedBadge: {
-    backgroundColor: 'rgba(200, 70, 99, 0.22)',
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 4,
-  },
-  savedEditedBadgeText: {
-    fontSize: 8,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    letterSpacing: 0.5,
-  },
-  savedRoutineTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  savedRoutineMeta: {
-    fontSize: 11,
-    color: Colors.textSecondary,
-  },
-  resumeRoutineBtn: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  resumeRoutineBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
+
+  // Footer
   attributionFooterCard: {
     backgroundColor: 'transparent',
-    borderRadius: 12,
-    padding: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 4,
     marginBottom: 16,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
@@ -543,10 +707,10 @@ export const styles = StyleSheet.create({
     marginBottom: 6,
   },
   attributionTitle: {
-    fontSize: 9.5,
+    fontSize: 9,
     fontWeight: '800',
     color: Colors.textMuted,
-    letterSpacing: 0.8,
+    letterSpacing: 2,
   },
   attributionLink: {
     fontSize: 11,
@@ -569,44 +733,42 @@ export const styles = StyleSheet.create({
     lineHeight: 15,
     color: Colors.textMuted,
   },
+
+  // Bottom Action Bar
   bottomBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     alignItems: 'center',
-    backgroundColor: Colors.background,
+    backgroundColor: 'rgba(25, 7, 39, 0.92)',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 12,
+    ...glassCardWeb,
   },
   primaryButton: {
-    backgroundColor: Colors.primary, // #C84663
-    height: 54,
-    maxWidth: 720,
+    backgroundColor: Colors.primary,
+    height: 52,
+    maxWidth: 648,
     width: '100%',
-    borderRadius: 16,
+    borderRadius: Radii.card,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 5,
   },
   primaryButtonText: {
-    color: Colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.2,
+    color: Colors.primaryInk,
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: -0.1,
     marginRight: 8,
   },
   buttonArrow: {
-    color: Colors.textPrimary,
+    color: Colors.primaryInk,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });
 

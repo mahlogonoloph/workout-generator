@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Circle, Rect, Path } from 'react-native-svg';
+import { Colors } from '../../theme/colors';
 import styles from './ExerciseIllustrationSvg.styles';
 
 /**
  * Anatomical Target Muscle Highlight Map (wger-inspired)
- * Highlights primary muscles in vibrant Fig Crimson (#C84663)
- * and secondary muscles in Bronze/Amber (#E09F67)
+ * Highlights primary muscles in Acid Lime (#D7FF35)
+ * and secondary muscles in Fig Orchid (#B96BC7)
  */
 export default function AnatomyMuscleMap({
   primaryMuscles = [],
@@ -14,9 +15,9 @@ export default function AnatomyMuscleMap({
   compact = false,
 }) {
   const isMuscleActive = (muscleKey) => {
-    if (primaryMuscles.includes(muscleKey)) return '#C84663'; // Primary Fig Crimson
-    if (secondaryMuscles.includes(muscleKey)) return '#E09F67'; // Secondary Bronze/Amber
-    return 'rgba(250, 244, 240, 0.12)'; // Inactive anatomical region
+    if (primaryMuscles.includes(muscleKey)) return Colors.primary;
+    if (secondaryMuscles.includes(muscleKey)) return Colors.accent;
+    return 'rgba(255, 255, 255, 0.12)';
   };
 
   return (
@@ -53,9 +54,9 @@ export default function AnatomyMuscleMap({
           r="5.5"
           fill={
             primaryMuscles.some((m) => m.includes('deltoid'))
-              ? '#C84663'
+              ? Colors.primary
               : secondaryMuscles.some((m) => m.includes('deltoid'))
-              ? '#E09F67'
+              ? Colors.accent
               : 'rgba(250, 244, 240, 0.12)'
           }
         />
@@ -65,9 +66,9 @@ export default function AnatomyMuscleMap({
           r="5.5"
           fill={
             primaryMuscles.some((m) => m.includes('deltoid'))
-              ? '#C84663'
+              ? Colors.primary
               : secondaryMuscles.some((m) => m.includes('deltoid'))
-              ? '#E09F67'
+              ? Colors.accent
               : 'rgba(250, 244, 240, 0.12)'
           }
         />
@@ -103,10 +104,10 @@ export default function AnatomyMuscleMap({
           rx="3"
           fill={
             primaryMuscles.includes('biceps') || primaryMuscles.includes('triceps')
-              ? '#C84663'
+              ? Colors.primary
               : secondaryMuscles.includes('biceps') ||
                 secondaryMuscles.includes('triceps')
-              ? '#E09F67'
+              ? Colors.accent
               : 'rgba(250, 244, 240, 0.12)'
           }
         />
@@ -118,10 +119,10 @@ export default function AnatomyMuscleMap({
           rx="3"
           fill={
             primaryMuscles.includes('biceps') || primaryMuscles.includes('triceps')
-              ? '#C84663'
+              ? Colors.primary
               : secondaryMuscles.includes('biceps') ||
                 secondaryMuscles.includes('triceps')
-              ? '#E09F67'
+              ? Colors.accent
               : 'rgba(250, 244, 240, 0.12)'
           }
         />
@@ -155,11 +156,11 @@ export default function AnatomyMuscleMap({
             primaryMuscles.includes('abs') ||
             primaryMuscles.includes('obliques') ||
             primaryMuscles.includes('lower_back')
-              ? '#C84663'
+              ? Colors.primary
               : secondaryMuscles.includes('abs') ||
                 secondaryMuscles.includes('obliques') ||
                 secondaryMuscles.includes('lower_back')
-              ? '#E09F67'
+              ? Colors.accent
               : 'rgba(250, 244, 240, 0.12)'
           }
         />
@@ -179,10 +180,10 @@ export default function AnatomyMuscleMap({
           rx="4"
           fill={
             primaryMuscles.includes('quads') || primaryMuscles.includes('hamstrings')
-              ? '#C84663'
+              ? Colors.primary
               : secondaryMuscles.includes('quads') ||
                 secondaryMuscles.includes('hamstrings')
-              ? '#E09F67'
+              ? Colors.accent
               : 'rgba(250, 244, 240, 0.12)'
           }
         />
@@ -194,10 +195,10 @@ export default function AnatomyMuscleMap({
           rx="4"
           fill={
             primaryMuscles.includes('quads') || primaryMuscles.includes('hamstrings')
-              ? '#C84663'
+              ? Colors.primary
               : secondaryMuscles.includes('quads') ||
                 secondaryMuscles.includes('hamstrings')
-              ? '#E09F67'
+              ? Colors.accent
               : 'rgba(250, 244, 240, 0.12)'
           }
         />

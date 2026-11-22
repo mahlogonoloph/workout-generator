@@ -1,28 +1,45 @@
 export const Colors = {
-  // Fig Design System Palette
-  background: '#1F1124',        // Deep Fig Skin (Screen background)
-  surface: '#291630',           // Muted Plum Surface (Cards and containers)
-  surfaceElevated: '#361D40',   // Elevated Card / Interactive items
-  surfaceLight: '#3D2247',      // Higher elevation / Input surfaces
-  
-  // Brand & Accent Colors
-  primary: '#C84663',           // Fig Flesh (Vibrant Primary CTA)
-  primaryPressed: '#A7324D',    // Active / Pressed state
-  primarySubtle: 'rgba(200, 70, 99, 0.12)', // Subtle highlight pill background
-  accent: '#7D4F38',            // Fig Stem & Exterior Bronze
-  accentSubtle: '#4A3428',      // Subtle borders & divider lines
-  accentBadge: 'rgba(125, 79, 56, 0.22)',   // Badge backgrounds
-  border: 'rgba(250, 244, 240, 0.08)',      // Clean, modern translucent border
+  // Electric Fig Design System (Figma 1001:2)
+  background: '#190727',        // Deep Nocturnal Fig
+  surface: '#230D35',           // Dark Plum Card
+  surfaceElevated: '#2E1344',   // Elevated Interactive Surface
+  surfaceLight: '#3C1B56',      // Input / Control Surface
+  surfaceGlass: 'rgba(255, 255, 255, 0.05)',
+  surfaceRecessed: 'rgba(25, 7, 39, 0.42)',
+
+  // Signature Plum & Acid Lime Accents
+  plum: '#5C2365',              // Fig Plum (Secondary cards, chart caps)
+  plumDeep: '#190727',          // Deep Fig Ink / Recessed Plum
+  primary: '#D7FF35',           // Acid Lime (Primary CTA, active hero card)
+  primaryPressed: '#C2EB20',    // Pressed Acid Lime
+  primaryInk: '#190727',        // Deep Fig ink on Acid Lime surfaces
+  primarySubtle: 'rgba(215, 255, 53, 0.12)',
+  primaryBorder: 'rgba(215, 255, 53, 0.38)',
+
+  accent: '#B96BC7',            // Soft Fig Orchid (Secondary highlights)
+  accentSubtle: 'rgba(92, 35, 101, 0.48)',
+  accentBadge: 'rgba(92, 35, 101, 0.36)',
+
+  // Borders
+  border: 'rgba(255, 255, 255, 0.10)',
+  borderStrong: 'rgba(255, 255, 255, 0.18)',
 
   // Typography
-  textPrimary: '#FAF4F0',       // Seed Cream / Soft Off-White (High contrast)
-  textSecondary: '#C5B5C9',     // Pale Plum Gray (Readable secondary text)
-  textMuted: '#96839B',         // Subtle captions and auxiliary metadata
+  textPrimary: '#FFFFFF',
+  textSecondary: 'rgba(255, 255, 255, 0.74)',
+  textMuted: 'rgba(255, 255, 255, 0.48)',
 
   // Semantic
-  error: '#FF6B6B',             // Error / Warning
-  success: '#4E9F74',           // Success / Confirmation
+  error: '#FF6B6B',
+  success: '#5BE49B',
+  warning: '#FFB84D',
+};
+
+export const Radii = {
+  card: 10,
+  control: 8,
+  badge: 6,
+  pill: 999,
 };
 
 export default Colors;
-

@@ -66,7 +66,7 @@ export function FocusMuscleSection({ selectedFocusAreas = [], onToggleFocusArea 
                       isFocused ? styles.focusChipTextSelected : styles.jointChipTextSafe,
                     ]}
                   >
-                    {isFocused ? `★ ${muscle}` : `+ ${muscle}`}
+                    {isFocused ? `✓ ${muscle}` : `+ ${muscle}`}
                   </Text>
                 </TouchableOpacity>
               );
@@ -91,8 +91,8 @@ export function JointExclusionSection({ selectedExclusions = [], onToggleExclusi
         <View style={styles.jointShieldBadge}>
           <Text style={styles.jointShieldBadgeText}>
             {selectedExclusions.length > 0
-              ? `🛡 ${selectedExclusions.length} Protected`
-              : '🛡 Full Tolerance'}
+              ? `${selectedExclusions.length} SHIELDED`
+              : 'FULL TOLERANCE'}
           </Text>
         </View>
       </View>

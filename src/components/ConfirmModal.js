@@ -87,7 +87,14 @@ export default function ConfirmModal({
                   accessibilityRole="button"
                   accessibilityLabel={confirmText}
                 >
-                  <Text style={styles.confirmBtnText}>{confirmText}</Text>
+                  <Text
+                    style={[
+                      styles.confirmBtnText,
+                      isDestructive && styles.confirmBtnTextDestructive,
+                    ]}
+                  >
+                    {confirmText}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>

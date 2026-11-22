@@ -182,7 +182,7 @@ export default function RoutineScreen({ navigation }) {
           targetWindow = window.open('', '_blank');
           if (targetWindow) {
             targetWindow.document.write(
-              '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Generating Workout Blueprint...</title><style>body{background:#1F1124;color:#FAF4F0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;font-size:14px;}</style></head><body><div><div style="font-size:32px;margin-bottom:12px;">🏋️</div><div style="font-weight:700;">Generating Workout Blueprint...</div><div style="font-size:12px;color:#E2CAD4;margin-top:6px;">Preparing your printable 8-week guide</div></div></body></html>'
+              '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Generating Workout Blueprint...</title><style>body{background:#190727;color:#FFFFFF;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;font-size:14px;}</style></head><body><div><div style="font-weight:800;color:#D7FF35;letter-spacing:2px;font-size:11px;margin-bottom:8px;">FIG TRAINING SYSTEM</div><div style="font-weight:700;">Generating Workout Blueprint...</div><div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:6px;">Preparing your printable 8-week guide</div></div></body></html>'
             );
           }
         } catch (e) {

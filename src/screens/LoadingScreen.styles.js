@@ -1,35 +1,35 @@
 import { StyleSheet } from 'react-native';
-import { Colors } from '../theme/colors';
+import { Colors, Radii } from '../theme/colors';
 
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.background, // #1F1124
+    backgroundColor: Colors.background,
     paddingHorizontal: 24,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   header: {
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 12,
   },
   eyebrow: {
-    fontSize: 11,
+    fontSize: 9.5,
     fontWeight: '800',
-    color: '#E09F67', // Warm high-contrast bronze
-    letterSpacing: 1.5,
-    marginBottom: 6,
+    color: Colors.primary,
+    letterSpacing: 2.6,
+    marginBottom: 8,
   },
   title: {
     fontSize: 24,
     fontWeight: '800',
-    color: Colors.textPrimary, // #FAF4F0
+    color: Colors.textPrimary,
     letterSpacing: -0.4,
     marginBottom: 6,
   },
   metaSubtitle: {
-    fontSize: 13,
-    color: Colors.textMuted,
+    fontSize: 12.5,
+    color: Colors.textSecondary,
   },
   coreWrapper: {
     width: 220,
@@ -52,7 +52,7 @@ export const styles = StyleSheet.create({
   },
   equalizerWrapper: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 22,
     gap: 8,
   },
   equalizerRow: {
@@ -62,72 +62,68 @@ export const styles = StyleSheet.create({
     gap: 6,
   },
   equalizerBar: {
-    width: 4,
+    width: 5,
     height: 24,
     borderRadius: 2,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.textPrimary,
   },
   equalizerBarTall: {
     height: 28,
-    backgroundColor: '#D95878',
+    backgroundColor: Colors.plum,
   },
   equalizerBarAccent: {
     height: 26,
-    backgroundColor: '#E09F67',
+    backgroundColor: Colors.primary,
   },
   equalizerLabel: {
     fontSize: 9,
     fontWeight: '800',
     color: Colors.textMuted,
-    letterSpacing: 1.2,
+    letterSpacing: 2.2,
   },
   haloRing: {
     position: 'absolute',
     width: 190,
     height: 190,
     borderRadius: 95,
-    backgroundColor: Colors.primary, // #C84663
+    backgroundColor: Colors.plum,
   },
   midRing: {
     position: 'absolute',
     width: 130,
     height: 130,
     borderRadius: 65,
-    backgroundColor: Colors.surfaceElevated, // #361D40
+    backgroundColor: Colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: 'rgba(200, 70, 99, 0.4)',
+    borderColor: Colors.primaryBorder,
   },
   centerNode: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.surface, // #291630
+    backgroundColor: Colors.surface,
     borderWidth: 2,
     borderColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 14,
-    elevation: 8,
   },
   innerDot: {
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: Colors.textPrimary,
+    backgroundColor: Colors.primary,
   },
   statusContainer: {
     width: '100%',
-    backgroundColor: Colors.surface, // #291630
-    borderRadius: 18,
+    maxWidth: 520,
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.card,
     padding: 20,
     borderWidth: 1,
     borderColor: Colors.border,
   },
   stageText: {
-    fontSize: 15,
+    fontSize: 14.5,
     fontWeight: '600',
     color: Colors.textPrimary,
     textAlign: 'center',
@@ -136,16 +132,16 @@ export const styles = StyleSheet.create({
   },
   progressTrack: {
     width: '100%',
-    height: 6,
+    height: 5,
     backgroundColor: Colors.surfaceElevated,
-    borderRadius: 3,
+    borderRadius: 2.5,
     overflow: 'hidden',
     marginBottom: 10,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: Colors.primary, // #C84663
-    borderRadius: 3,
+    backgroundColor: Colors.primary,
+    borderRadius: 2.5,
   },
   percentRow: {
     flexDirection: 'row',
@@ -153,24 +149,24 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   percentLabel: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 9.5,
+    fontWeight: '800',
     color: Colors.textMuted,
-    letterSpacing: 1,
+    letterSpacing: 2.2,
   },
   percentNumber: {
     fontSize: 12,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontWeight: '800',
+    color: Colors.primary,
   },
   skipAction: {
     marginTop: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
   },
   skipActionText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
     color: Colors.textSecondary,
   },
 });

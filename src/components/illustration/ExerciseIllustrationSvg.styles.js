@@ -23,8 +23,8 @@ export const styles = StyleSheet.create({
     flex: 1.2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(31, 17, 36, 0.55)',
-    borderRadius: 10,
+    backgroundColor: Colors.surfaceRecessed,
+    borderRadius: 8,
     paddingTop: 18,
     paddingBottom: 4,
     position: 'relative',
@@ -32,14 +32,14 @@ export const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   diagramBoxApproximation: {
-    borderColor: 'rgba(224, 159, 103, 0.45)',
+    borderColor: 'rgba(185, 107, 199, 0.45)',
   },
   anatomyBox: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(31, 17, 36, 0.55)',
-    borderRadius: 10,
+    backgroundColor: Colors.surfaceRecessed,
+    borderRadius: 8,
     paddingTop: 18,
     paddingBottom: 4,
     position: 'relative',
@@ -80,7 +80,7 @@ export const styles = StyleSheet.create({
     zIndex: 10,
   },
   playMotionBtnActive: {
-    backgroundColor: 'rgba(200, 70, 99, 0.22)',
+    backgroundColor: Colors.primarySubtle,
     borderColor: Colors.primary,
   },
   playMotionIcon: {

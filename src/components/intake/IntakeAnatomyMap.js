@@ -111,12 +111,12 @@ const styles = StyleSheet.create({
   container: {
     width: 82,
     height: 102,
-    backgroundColor: 'rgba(31, 17, 36, 0.65)',
-    borderRadius: 12,
+    backgroundColor: Colors.surfaceRecessed,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(250, 244, 240, 0.08)',
+    borderColor: Colors.border,
     paddingVertical: 2,
   },
 });

@@ -47,8 +47,8 @@ export const styles = StyleSheet.create({
     borderColor: 'rgba(255, 107, 107, 0.35)',
   },
   iconBadgeDefault: {
-    backgroundColor: 'rgba(200, 70, 99, 0.14)',
-    borderColor: 'rgba(200, 70, 99, 0.35)',
+    backgroundColor: Colors.primarySubtle,
+    borderColor: Colors.primaryBorder,
   },
   iconText: {
     fontSize: 18,
@@ -112,9 +112,12 @@ export const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   confirmBtnText: {
-    color: '#FFFFFF',
+    color: Colors.primaryInk,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
+  },
+  confirmBtnTextDestructive: {
+    color: '#FFFFFF',
   },
 });
 

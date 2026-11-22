@@ -1,13 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   StatusBar,
   Animated,
   Easing,
+  ImageBackground,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
 import { Colors } from '../theme/colors';
 import useWorkoutStore from '../store/useWorkoutStore';
 import { estimateWeeklyVolume } from '../api/generationClient';
@@ -24,6 +26,8 @@ import FeedbackMemoryBanner from '../components/intake/FeedbackMemoryBanner';
 import AttributionDisclaimerFooter from '../components/intake/AttributionDisclaimerFooter';
 import IntakeBottomBar from '../components/intake/IntakeBottomBar';
 import styles from './IntakeScreen.styles';
+
+const FIG_HERO_BG = require('../../assets/fig-hero-bg.jpg');
 
 export default function IntakeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -56,7 +60,7 @@ export default function IntakeScreen({ navigation }) {
   const hasFeedbackMemory =
     likedCount > 0 || dislikedCount > 0 || (feedback?.intensityRating && feedback.intensityRating !== 'optimal');
 
-  // Dynamic Science-Based Volume Calculation for Motion Graphic
+  // Dynamic Science-Based Volume Calculation
   const volumeEstimate = estimateWeeklyVolume({
     primaryGoal: selectedGoal,
     frequencyDays: selectedFrequency,
@@ -66,52 +70,26 @@ export default function IntakeScreen({ navigation }) {
   });
   const estimatedWeeklySets = volumeEstimate.weeklySets;
 
-  // Smooth Entrance Animations
+  // Entrance Animation (one clean entrance on mount)
   const entranceHeroAnim = useRef(new Animated.Value(0)).current;
-  const entranceHeroSlide = useRef(new Animated.Value(14)).current;
-  const entranceSectionAnim = useRef(new Animated.Value(0)).current;
-  const volumeMeterAnim = useRef(new Animated.Value(0.4)).current;
+  const entranceHeroSlide = useRef(new Animated.Value(12)).current;
 
   useEffect(() => {
-    // Staggered Entrance
     Animated.parallel([
       Animated.timing(entranceHeroAnim, {
         toValue: 1,
-        duration: 450,
+        duration: 420,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
       Animated.timing(entranceHeroSlide, {
         toValue: 0,
-        duration: 450,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.timing(entranceSectionAnim, {
-        toValue: 1,
-        duration: 650,
-        delay: 120,
+        duration: 420,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
     ]).start();
   }, []);
-
-  // Update volume meter whenever parameters change
-  useEffect(() => {
-    const targetRatio = Math.max(0.15, Math.min(1, estimatedWeeklySets / 110));
-    Animated.spring(volumeMeterAnim, {
-      toValue: targetRatio,
-      friction: 6,
-      tension: 60,
-      useNativeDriver: false,
-    }).start();
-  }, [estimatedWeeklySets]);
-
-  const volumeMeterWidth = volumeMeterAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  });
 
   const handleGenerate = () => {
     if (generatedRoutine && isEdited) {
@@ -125,15 +103,41 @@ export default function IntakeScreen({ navigation }) {
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
 
+      {/* Full-bleed Atmospheric Ripe Figs Hero Backdrop */}
+      <View style={styles.heroBackdropWrap} pointerEvents="none">
+        <ImageBackground
+          source={FIG_HERO_BG}
+          style={styles.heroBackdropImage}
+          imageStyle={styles.heroBackdropImageInner}
+          resizeMode="cover"
+        >
+          {Platform.OS === 'web' ? (
+            <View style={styles.heroBackdropGradientWeb} />
+          ) : (
+            <Svg width="100%" height="100%" style={styles.heroBackdropSvg}>
+              <Defs>
+                <SvgLinearGradient id="figHeroFade" x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0" stopColor="#190727" stopOpacity="0.58" />
+                  <Stop offset="0.38" stopColor="#190727" stopOpacity="0.38" />
+                  <Stop offset="0.78" stopColor="#190727" stopOpacity="0.86" />
+                  <Stop offset="1" stopColor="#190727" stopOpacity="1" />
+                </SvgLinearGradient>
+              </Defs>
+              <Rect x="0" y="0" width="100%" height="100%" fill="url(#figHeroFade)" />
+            </Svg>
+          )}
+        </ImageBackground>
+      </View>
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: Math.max(insets.top, 16), paddingBottom: insets.bottom + 110 },
+          { paddingTop: Math.max(insets.top, 20), paddingBottom: insets.bottom + 116 },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Resume Saved Routine Banner (If Active) */}
+        {/* Top Header: Active Saved Blueprint or Brand Masthead */}
         <SavedRoutineBanner
           generatedRoutine={generatedRoutine}
           isEdited={isEdited}
@@ -142,69 +146,54 @@ export default function IntakeScreen({ navigation }) {
           onViewPlan={() => navigation.navigate('Routine')}
         />
 
-        {/* Clean, Confident Header Hero */}
-        <Animated.View
-          style={[
-            styles.header,
-            {
-              opacity: entranceSectionAnim,
-            },
-          ]}
-        >
-          <Text style={styles.title}>Design Your 8-Week Program</Text>
-          <Text style={styles.subtitle}>
-            Calibrated volume, exercise selection, and joint-safe periodization tailored to your space.
-          </Text>
-        </Animated.View>
-
-        {/* Live Architecture Metric Summary Strip */}
+        {/* Frosted Glass Hero Blueprint Card (Figma 1001:94) */}
         <ArchitectureMetricBar
           estimatedWeeklySets={estimatedWeeklySets}
           selectedFrequency={selectedFrequency}
           selectedLocation={selectedLocation}
+          selectedDuration={selectedDuration}
           selectedExclusions={selectedExclusions}
-          volumeMeterWidth={volumeMeterWidth}
           entranceHeroAnim={entranceHeroAnim}
           entranceHeroSlide={entranceHeroSlide}
         />
 
-        {/* Section 1: Primary Training Goal */}
+        {/* Primary Goal: Acid Lime Hero Card + Collapsed Plum Steppers (Figma 1001:96) */}
         <GoalSelectionSection
           selectedGoal={selectedGoal}
           onSelectGoal={setPrimaryGoal}
         />
 
-        {/* Section 2: Environment */}
+        {/* Environment & Equipment */}
         <LocationSelectionSection
           selectedLocation={selectedLocation}
           onSelectLocation={setLocation}
         />
 
-        {/* Section 3: Weekly Frequency */}
+        {/* Weekly Frequency */}
         <FrequencySelectionSection
           selectedFrequency={selectedFrequency}
           onSelectFrequency={setFrequencyDays}
         />
 
-        {/* Section 4: Target Session Duration */}
+        {/* Target Session Duration */}
         <DurationSelectionSection
           selectedDuration={selectedDuration}
           onSelectDuration={setDurationMinutes}
         />
 
-        {/* Section 5: Target Muscle Group Focus */}
+        {/* Target Muscle Priority */}
         <FocusMuscleSection
           selectedFocusAreas={selectedFocusAreas}
           onToggleFocusArea={toggleFocusArea}
         />
 
-        {/* Section 6: Joint & Recovery Constraints */}
+        {/* Joint Sensitivity / Exclusions */}
         <JointExclusionSection
           selectedExclusions={selectedExclusions}
           onToggleExclusion={toggleExclusionZone}
         />
 
-        {/* Section 7: Active Feedback Memory Banner */}
+        {/* Active Feedback Memory Banner */}
         <FeedbackMemoryBanner
           hasFeedbackMemory={hasFeedbackMemory}
           likedCount={likedCount}
@@ -213,7 +202,7 @@ export default function IntakeScreen({ navigation }) {
           onResetFeedback={resetFeedback}
         />
 
-        {/* Section 8: Open-Source Attribution & Health Disclaimer */}
+        {/* Open-Source Attribution & Health Disclaimer */}
         <AttributionDisclaimerFooter />
       </ScrollView>
 
