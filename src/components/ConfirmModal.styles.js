@@ -1,10 +1,10 @@
 import { StyleSheet, Platform } from 'react-native';
-import { Colors } from '../theme/colors';
+import { Colors, Glass } from '../theme/colors';
 
 export const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(10, 5, 12, 0.78)',
+    backgroundColor: 'rgba(10, 5, 12, 0.72)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -12,10 +12,9 @@ export const styles = StyleSheet.create({
   modalCard: {
     width: '100%',
     maxWidth: 400,
-    backgroundColor: Colors.surfaceElevated,
+    ...Glass.elevated,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.border,
     paddingHorizontal: 22,
     paddingTop: 24,
     paddingBottom: 20,

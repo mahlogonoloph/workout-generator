@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import styles from '../../screens/IntakeScreen.styles';
-import { LocationIcon } from './IntakeGraphics';
+import { Colors } from '../../theme/colors';
+import { LocationIcon, CheckBadgeIcon } from './IntakeGraphics';
 
 export const LOCATION_OPTIONS = [
   { id: 'Commercial Gym', title: 'Commercial Gym', desc: 'Full barbells, dumbbells, cables & machines' },
@@ -15,8 +16,16 @@ export default function LocationSelectionSection({
 }) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Environment & Equipment</Text>
-      <Text style={styles.sectionSubtitle}>Where you will perform the majority of your sessions</Text>
+      <View style={styles.stepBadgeRow}>
+        <View style={styles.stepPillBadge}>
+          <Text style={styles.stepPillBadgeText}>STEP 2 OF 4</Text>
+        </View>
+        <Text style={styles.stepActionHint}>Tap one to choose</Text>
+      </View>
+      <Text style={styles.sectionTitle}>Where Will You Work Out?</Text>
+      <Text style={styles.sectionSubtitle}>
+        Pick your main training space so we only include equipment you have
+      </Text>
       <View style={styles.verticalPillsContainer}>
         {LOCATION_OPTIONS.map((item) => {
           const isSelected = selectedLocation === item.id;
@@ -29,8 +38,9 @@ export default function LocationSelectionSection({
                 styles.goalPill,
                 isSelected ? styles.goalPillSelected : styles.goalPillUnselected,
               ]}
-              accessibilityRole="button"
-              accessibilityLabel={`Select ${item.title}`}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: isSelected }}
+              accessibilityLabel={`Select ${item.title}: ${item.desc}`}
             >
               <View style={[styles.goalIconBox, isSelected && styles.goalIconBoxSelected]}>
                 <LocationIcon locationId={item.id} isSelected={isSelected} size={32} />
@@ -53,12 +63,15 @@ export default function LocationSelectionSection({
                   {item.desc}
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.selectionIndicator,
-                  isSelected ? styles.selectionIndicatorActive : styles.selectionIndicatorInactive,
-                ]}
-              />
+              {isSelected ? (
+                <CheckBadgeIcon
+                  size={20}
+                  bgColor={Colors.primary}
+                  checkColor={Colors.primaryInk}
+                />
+              ) : (
+                <View style={styles.radioCircleUnselected} />
+              )}
             </TouchableOpacity>
           );
         })}

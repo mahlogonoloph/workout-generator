@@ -7,6 +7,7 @@ import {
   StatusBar,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
@@ -58,21 +59,25 @@ export default function LoadingScreen({ navigation }) {
   const stageSlideAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    const useNative = Platform.OS !== 'web';
+    const loops = [];
+    let navTimeout = null;
+
     // 1. Organic, subtle breathing glow
-    Animated.loop(
+    const pulseLoop = Animated.loop(
       Animated.parallel([
         Animated.sequence([
           Animated.timing(pulseScale, {
             toValue: 1.15,
             duration: 1500,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver: useNative,
           }),
           Animated.timing(pulseScale, {
             toValue: 1,
             duration: 1500,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver: useNative,
           }),
         ]),
         Animated.sequence([
@@ -80,36 +85,42 @@ export default function LoadingScreen({ navigation }) {
             toValue: 0.6,
             duration: 1500,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver: useNative,
           }),
           Animated.timing(pulseOpacity, {
             toValue: 0.25,
             duration: 1500,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver: useNative,
           }),
         ]),
       ])
-    ).start();
+    );
+    loops.push(pulseLoop);
+    pulseLoop.start();
 
     // 2. Kinetic Orbital Rotation Loops
-    Animated.loop(
+    const forwardOrbit = Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
         duration: 9000,
         easing: Easing.linear,
-        useNativeDriver: true,
+        useNativeDriver: useNative,
       })
-    ).start();
+    );
+    loops.push(forwardOrbit);
+    forwardOrbit.start();
 
-    Animated.loop(
+    const reverseOrbit = Animated.loop(
       Animated.timing(rotateReverseAnim, {
         toValue: 1,
         duration: 6500,
         easing: Easing.linear,
-        useNativeDriver: true,
+        useNativeDriver: useNative,
       })
-    ).start();
+    );
+    loops.push(reverseOrbit);
+    reverseOrbit.start();
 
     // 3. Kinetic Spectrum Equalizer Waveform Loops
     const makeBarLoop = (animVal, minVal, maxVal, duration) =>
@@ -119,22 +130,27 @@ export default function LoadingScreen({ navigation }) {
             toValue: maxVal,
             duration,
             easing: Easing.inOut(Easing.quad),
-            useNativeDriver: true,
+            useNativeDriver: useNative,
           }),
           Animated.timing(animVal, {
             toValue: minVal,
             duration,
             easing: Easing.inOut(Easing.quad),
-            useNativeDriver: true,
+            useNativeDriver: useNative,
           }),
         ])
       );
 
-    makeBarLoop(bar1, 0.2, 1.0, 420).start();
-    makeBarLoop(bar2, 0.35, 0.95, 360).start();
-    makeBarLoop(bar3, 0.25, 1.0, 480).start();
-    makeBarLoop(bar4, 0.3, 0.9, 390).start();
-    makeBarLoop(bar5, 0.15, 0.85, 450).start();
+    [
+      makeBarLoop(bar1, 0.2, 1.0, 420),
+      makeBarLoop(bar2, 0.35, 0.95, 360),
+      makeBarLoop(bar3, 0.25, 1.0, 480),
+      makeBarLoop(bar4, 0.3, 0.9, 390),
+      makeBarLoop(bar5, 0.15, 0.85, 450),
+    ].forEach((loop) => {
+      loops.push(loop);
+      loop.start();
+    });
 
     // 4. Stage progress timer with smooth text cross-fade
     const stageTimer = setInterval(() => {
@@ -146,12 +162,12 @@ export default function LoadingScreen({ navigation }) {
 
           Animated.sequence([
             Animated.parallel([
-              Animated.timing(stageFadeAnim, { toValue: 0.2, duration: 120, useNativeDriver: true }),
-              Animated.timing(stageSlideAnim, { toValue: -6, duration: 120, useNativeDriver: true }),
+              Animated.timing(stageFadeAnim, { toValue: 0.2, duration: 120, useNativeDriver: useNative }),
+              Animated.timing(stageSlideAnim, { toValue: -6, duration: 120, useNativeDriver: useNative }),
             ]),
             Animated.parallel([
-              Animated.timing(stageFadeAnim, { toValue: 1, duration: 240, useNativeDriver: true }),
-              Animated.timing(stageSlideAnim, { toValue: 0, duration: 240, useNativeDriver: true }),
+              Animated.timing(stageFadeAnim, { toValue: 1, duration: 240, useNativeDriver: useNative }),
+              Animated.timing(stageSlideAnim, { toValue: 0, duration: 240, useNativeDriver: useNative }),
             ]),
           ]).start();
 
@@ -167,7 +183,7 @@ export default function LoadingScreen({ navigation }) {
       });
     }, 600);
 
-    // 3. Trigger plan synthesis
+    // 5. Trigger plan synthesis
     let isMounted = true;
 
     const handleSafetyError = (errorMessage) => {
@@ -205,7 +221,7 @@ export default function LoadingScreen({ navigation }) {
           easing: Easing.out(Easing.quad),
           useNativeDriver: false,
         }).start(() => {
-          setTimeout(() => {
+          navTimeout = setTimeout(() => {
             if (isMounted && !hasNavigatedRef.current) {
               hasNavigatedRef.current = true;
               navigation.replace('Routine');
@@ -221,6 +237,8 @@ export default function LoadingScreen({ navigation }) {
     return () => {
       isMounted = false;
       clearInterval(stageTimer);
+      if (navTimeout) clearTimeout(navTimeout);
+      loops.forEach((loop) => loop.stop());
     };
   }, [navigation, generateWorkoutPlan]);
 

@@ -18,23 +18,15 @@ export default function SavedRoutineBanner({
     return (
       <Animated.View
         style={[
-          styles.topHeaderRow,
-          styles.topHeaderRowCompact,
+          styles.brandMastheadRow,
           {
             opacity: entranceHeroAnim,
             transform: [{ translateY: entranceHeroSlide }],
           },
         ]}
       >
-        <View style={styles.topHeaderInfo}>
-          <View style={styles.topHeaderBadgeRow}>
-            <Text style={styles.eyebrowWide}>FIG TRAINING SYSTEM</Text>
-          </View>
-          <Text style={styles.topHeaderTitle}>8-Week Periodized Blueprint</Text>
-          <Text style={styles.topHeaderMeta}>
-            Calibrated volume, joint-safe movement selection, and progressive overload built for your space.
-          </Text>
-        </View>
+        <Text style={styles.brandWordmark}>FIG</Text>
+        <Text style={styles.brandTag}>8-WEEK PROGRAM BUILDER</Text>
       </Animated.View>
     );
   }
@@ -62,7 +54,7 @@ export default function SavedRoutineBanner({
           {generatedRoutine.programName || '8-Week Hypertrophy Blueprint'}
         </Text>
         <Text style={styles.topHeaderMeta}>
-          {generatedRoutine.schedule.length} days / week • Ready to train or export to PDF.
+          {generatedRoutine.schedule.length} days / week • Ready to train or export.
         </Text>
       </View>
 

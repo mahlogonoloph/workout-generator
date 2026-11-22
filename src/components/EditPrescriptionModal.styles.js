@@ -1,21 +1,20 @@
 import { StyleSheet, Platform } from 'react-native';
-import { Colors } from '../theme/colors';
+import { Colors, Glass } from '../theme/colors';
 
 export const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 7, 18, 0.78)',
+    backgroundColor: 'rgba(15, 7, 18, 0.72)',
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: Colors.surface,
+    ...Glass.elevated,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 20,
     paddingBottom: Platform.OS === 'ios' ? 36 : 24,
     maxHeight: '88%',
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   header: {
     flexDirection: 'row',

@@ -17,8 +17,16 @@ export default function FrequencySelectionSection({
 }) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Weekly Frequency</Text>
-      <Text style={styles.sectionSubtitle}>Number of training days committed per week</Text>
+      <View style={styles.stepBadgeRow}>
+        <View style={styles.stepPillBadge}>
+          <Text style={styles.stepPillBadgeText}>STEP 3 OF 4</Text>
+        </View>
+        <Text style={styles.stepActionHint}>Tap one to choose</Text>
+      </View>
+      <Text style={styles.sectionTitle}>How Many Days Per Week?</Text>
+      <Text style={styles.sectionSubtitle}>
+        Pick the number of days you can realistically train each week
+      </Text>
       <View style={styles.frequencyRow}>
         {FREQUENCY_OPTIONS.map((item) => {
           const isSelected = selectedFrequency === item.days;
@@ -31,7 +39,8 @@ export default function FrequencySelectionSection({
                 styles.frequencyPill,
                 isSelected ? styles.frequencyPillSelected : styles.frequencyPillUnselected,
               ]}
-              accessibilityRole="button"
+              accessibilityRole="radio"
+              accessibilityState={{ checked: isSelected }}
               accessibilityLabel={`${item.days} days per week, ${item.sub}`}
             >
               <Text

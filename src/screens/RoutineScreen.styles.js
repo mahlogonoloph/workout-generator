@@ -1,18 +1,46 @@
 import { StyleSheet, Platform } from 'react-native';
-import { Colors, Radii } from '../theme/colors';
-
-const glassBarWeb = Platform.select({
-  web: {
-    backdropFilter: 'blur(24px)',
-    WebkitBackdropFilter: 'blur(24px)',
-  },
-  default: {},
-});
+import { Colors, Radii, Glass } from '../theme/colors';
 
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  ambientBackdropWrap: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
+  },
+  ambientBackdropImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  ambientBackdropImageInner: {
+    opacity: 0.45,
+  },
+  ambientBackdropOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    ...Platform.select({
+      web: {
+        backgroundImage:
+          'linear-gradient(180deg, rgba(25,7,39,0.62) 0%, rgba(25,7,39,0.52) 45%, rgba(25,7,39,0.82) 100%)',
+      },
+      default: {
+        backgroundColor: 'rgba(25, 7, 39, 0.70)',
+      },
+    }),
   },
   scrollView: {
     flex: 1,
@@ -107,12 +135,11 @@ export const styles = StyleSheet.create({
     lineHeight: 18,
   },
   feedbackCalibrationCard: {
-    backgroundColor: Colors.surface,
+    ...Glass.card,
     borderRadius: Radii.card,
     padding: 16,
     marginBottom: 18,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   feedbackHeaderRow: {
     flexDirection: 'row',
@@ -188,8 +215,7 @@ export const styles = StyleSheet.create({
     minWidth: 108,
   },
   dayTabInactive: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.border,
+    ...Glass.card,
   },
   dayTabActive: {
     backgroundColor: Colors.primary,
@@ -241,10 +267,9 @@ export const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   warmupCard: {
-    backgroundColor: Colors.surface,
+    ...Glass.card,
     borderRadius: Radii.card,
     borderWidth: 1,
-    borderColor: Colors.border,
     marginBottom: 16,
     overflow: 'hidden',
   },
@@ -312,11 +337,10 @@ export const styles = StyleSheet.create({
     gap: 14,
   },
   emptyExercisesCard: {
-    backgroundColor: Colors.surface,
+    ...Glass.card,
     borderRadius: Radii.card,
     padding: 24,
     borderWidth: 1,
-    borderColor: Colors.border,
     alignItems: 'center',
     marginBottom: 8,
   },
@@ -334,11 +358,10 @@ export const styles = StyleSheet.create({
     lineHeight: 18,
   },
   exerciseCard: {
-    backgroundColor: Colors.surface,
+    ...Glass.card,
     borderRadius: Radii.card,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   swappedBanner: {
     backgroundColor: 'rgba(91, 228, 155, 0.14)',
@@ -500,6 +523,48 @@ export const styles = StyleSheet.create({
   },
   iconActionTextLiked: {
     color: Colors.primary,
+  },
+  detailsToggleBtn: {
+    height: 32,
+    paddingHorizontal: 10,
+    borderRadius: Radii.control,
+    backgroundColor: Colors.surfaceElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  detailsToggleText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  expandedActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  reorderGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginRight: 'auto',
+  },
+  miniToolBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: Radii.control,
+    backgroundColor: Colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  miniToolBtnText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: Colors.textSecondary,
   },
   swapActionBtn: {
     height: 32,
@@ -790,7 +855,7 @@ export const styles = StyleSheet.create({
   addExerciseToDayButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
+    ...Glass.card,
     borderRadius: Radii.card,
     padding: 14,
     borderWidth: 1.5,
@@ -858,13 +923,11 @@ export const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    backgroundColor: 'rgba(25, 7, 39, 0.92)',
+    ...Glass.bar,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
     paddingHorizontal: 16,
     paddingTop: 12,
     gap: 6,
-    ...glassBarWeb,
   },
   primaryButton: {
     backgroundColor: Colors.primary,

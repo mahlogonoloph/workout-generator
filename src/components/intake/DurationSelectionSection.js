@@ -15,8 +15,16 @@ export default function DurationSelectionSection({
 }) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Target Duration</Text>
-      <Text style={styles.sectionSubtitle}>Average time cap per workout session</Text>
+      <View style={styles.stepBadgeRow}>
+        <View style={styles.stepPillBadge}>
+          <Text style={styles.stepPillBadgeText}>STEP 4 OF 4</Text>
+        </View>
+        <Text style={styles.stepActionHint}>Tap one to choose</Text>
+      </View>
+      <Text style={styles.sectionTitle}>How Long Per Workout?</Text>
+      <Text style={styles.sectionSubtitle}>
+        Pick your ideal session length — we fit your sets to match
+      </Text>
       <View style={styles.durationRow}>
         {DURATION_OPTIONS.map((item) => {
           const isSelected = selectedDuration === item.minutes;
@@ -29,7 +37,8 @@ export default function DurationSelectionSection({
                 styles.durationPill,
                 isSelected ? styles.durationPillSelected : styles.durationPillUnselected,
               ]}
-              accessibilityRole="button"
+              accessibilityRole="radio"
+              accessibilityState={{ checked: isSelected }}
               accessibilityLabel={`${item.label} (${item.desc}) session`}
             >
               <Text

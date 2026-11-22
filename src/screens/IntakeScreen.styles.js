@@ -1,13 +1,5 @@
 import { StyleSheet, Platform } from 'react-native';
-import { Colors, Radii } from '../theme/colors';
-
-const glassCardWeb = Platform.select({
-  web: {
-    backdropFilter: 'blur(24px)',
-    WebkitBackdropFilter: 'blur(24px)',
-  },
-  default: {},
-});
+import { Colors, Radii, Glass } from '../theme/colors';
 
 export const styles = StyleSheet.create({
   screen: {
@@ -19,15 +11,20 @@ export const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 640,
+    bottom: 0,
     overflow: 'hidden',
   },
   heroBackdropImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     width: '100%',
     height: '100%',
   },
   heroBackdropImageInner: {
-    opacity: 0.92,
+    opacity: 0.9,
   },
   heroBackdropSvg: {
     position: 'absolute',
@@ -45,10 +42,10 @@ export const styles = StyleSheet.create({
     ...Platform.select({
       web: {
         backgroundImage:
-          'linear-gradient(180deg, rgba(25,7,39,0.52) 0%, rgba(25,7,39,0.18) 42%, rgba(25,7,39,0.72) 82%, #190727 100%)',
+          'linear-gradient(180deg, rgba(25,7,39,0.50) 0%, rgba(25,7,39,0.22) 34%, rgba(25,7,39,0.58) 68%, rgba(25,7,39,0.82) 100%)',
       },
       default: {
-        backgroundColor: 'rgba(25, 7, 39, 0.52)',
+        backgroundColor: 'rgba(25, 7, 39, 0.56)',
       },
     }),
   },
@@ -62,6 +59,28 @@ export const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 
+  // Minimal First-Visit Brand Masthead (lets the fig backdrop breathe)
+  brandMastheadRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 6,
+    paddingTop: 10,
+    marginBottom: 148,
+  },
+  brandWordmark: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: Colors.textPrimary,
+    letterSpacing: 4,
+  },
+  brandTag: {
+    fontSize: 8.5,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    letterSpacing: 2.2,
+  },
+
   // Top Header / Saved Blueprint Banner (Figma 1001:281)
   topHeaderRow: {
     flexDirection: 'row',
@@ -69,11 +88,8 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 8,
     paddingTop: 12,
-    marginBottom: 88,
+    marginBottom: 96,
     gap: 14,
-  },
-  topHeaderRowCompact: {
-    marginBottom: 48,
   },
   topHeaderInfo: {
     flex: 1,
@@ -144,53 +160,43 @@ export const styles = StyleSheet.create({
 
   // Frosted Glass Blueprint Card (Figma 1001:94)
   glassBlueprintCard: {
-    backgroundColor: Platform.OS === 'web' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(35, 13, 53, 0.84)',
+    ...Glass.card,
     borderRadius: Radii.card,
     padding: 20,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.14)',
-    ...glassCardWeb,
   },
   glassHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 6,
     gap: 12,
   },
   glassTitle: {
-    fontSize: 16,
+    fontSize: 16.5,
     fontWeight: '800',
     color: Colors.textPrimary,
     letterSpacing: -0.3,
     flex: 1,
   },
-  glassSubRow: {
+  glassStatusRow: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 16,
-  },
-  glassSubtitle: {
-    fontSize: 11.5,
-    lineHeight: 16,
-    color: Colors.textSecondary,
-    flex: 1,
-    maxWidth: 220,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginBottom: 14,
   },
   jointSafetyTag: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: '800',
     color: Colors.primary,
-    letterSpacing: 1.2,
+    letterSpacing: 1.8,
     textTransform: 'uppercase',
   },
   glassDivider: {
     height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.14)',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   glassSplitRow: {
     flexDirection: 'row',
@@ -199,60 +205,168 @@ export const styles = StyleSheet.create({
   },
   chartWell: {
     flex: 1,
-    minHeight: 98,
+    minHeight: 90,
     backgroundColor: 'rgba(25, 7, 39, 0.38)',
     borderRadius: Radii.control,
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'flex-end',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   summaryCol: {
-    flex: 1.08,
+    flex: 1.05,
     justifyContent: 'space-between',
-    gap: 10,
+    gap: 8,
   },
   summaryEyebrow: {
     fontSize: 8.5,
     fontWeight: '700',
-    color: Colors.textSecondary,
+    color: Colors.textMuted,
     letterSpacing: 2.2,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
   summaryMainVal: {
-    fontSize: 12.5,
-    lineHeight: 17,
-    fontWeight: '700',
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: '800',
     color: Colors.textPrimary,
+    letterSpacing: -0.3,
   },
-  telemetryList: {
-    gap: 4,
+  summaryMetaLine: {
+    fontSize: 11.5,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+    marginTop: 2,
   },
-  telemetryRow: {
+  summaryPeriodLine: {
+    fontSize: 10,
+    color: Colors.textMuted,
+    fontWeight: '600',
+  },
+
+  // Guided 4-Step Program Setup Strip
+  stepGuideCard: {
+    ...Glass.card,
+    borderRadius: Radii.card,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 24,
+  },
+  stepGuideTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
     gap: 8,
   },
-  telemetryCodeWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    minWidth: 22,
-  },
-  telemetryCode: {
+  stepGuideEyebrow: {
     fontSize: 9,
     fontWeight: '800',
     color: Colors.primary,
-    letterSpacing: 0.8,
+    letterSpacing: 2,
     textTransform: 'uppercase',
   },
-  telemetryText: {
-    fontSize: 10,
+  stepGuideEta: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: Colors.textMuted,
+  },
+  stepGuideHint: {
+    fontSize: 12,
+    lineHeight: 17,
     color: Colors.textSecondary,
+    marginBottom: 12,
+  },
+  stepGuideRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  stepGuidePill: {
     flex: 1,
+    backgroundColor: Colors.surfaceRecessed,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radii.control,
+    paddingVertical: 8,
+    paddingHorizontal: 7,
+    minHeight: 52,
+    justifyContent: 'space-between',
+  },
+  stepGuidePillActive: {
+    backgroundColor: Colors.primarySubtle,
+    borderColor: Colors.primaryBorder,
+  },
+  stepGuidePillTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 3,
+  },
+  stepNumBadge: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepNumBadgeActive: {
+    backgroundColor: Colors.primary,
+  },
+  stepNumText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  stepNumTextActive: {
+    color: Colors.primaryInk,
+  },
+  stepGuideLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    flexShrink: 1,
+  },
+  stepGuideLabelActive: {
+    color: Colors.primary,
+  },
+  stepGuideValue: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    letterSpacing: -0.1,
+  },
+
+  // Step Badge Header (Steps 1-4)
+  stepBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+    gap: 8,
+  },
+  stepPillBadge: {
+    backgroundColor: Colors.primarySubtle,
+    borderWidth: 1,
+    borderColor: Colors.primaryBorder,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: Radii.badge,
+  },
+  stepPillBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 1.6,
+    textTransform: 'uppercase',
+  },
+  stepActionHint: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.textMuted,
   },
 
   // Goal Selection Cascading Pages Deck (Figma 1001:96 + 1001:282 + 1001:326)
@@ -292,12 +406,13 @@ export const styles = StyleSheet.create({
     width: 140,
     transform: [{ rotate: '-90deg' }],
   },
-  goalSpineLabel: {
+  goalSpineLabelMuted: {
     fontSize: 8.5,
     fontWeight: '800',
     letterSpacing: 2,
     textTransform: 'uppercase',
     textAlign: 'center',
+    color: 'rgba(255, 255, 255, 0.72)',
   },
   goalExpandedLayer: {
     flex: 1,
@@ -355,6 +470,14 @@ export const styles = StyleSheet.create({
   },
   goalDotActive: {
     width: 14,
+  },
+  radioCircleUnselected: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: Colors.borderStrong,
+    backgroundColor: 'transparent',
   },
 
   // Standard Section Chrome
@@ -420,11 +543,10 @@ export const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   goalPillUnselected: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.border,
+    ...Glass.card,
   },
   goalPillSelected: {
-    backgroundColor: Colors.surfaceElevated,
+    ...Glass.elevated,
     borderColor: Colors.primary,
     borderWidth: 1.5,
   },
@@ -485,8 +607,7 @@ export const styles = StyleSheet.create({
     minHeight: 70,
   },
   frequencyPillUnselected: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.border,
+    ...Glass.card,
   },
   frequencyPillSelected: {
     backgroundColor: Colors.primary,
@@ -528,8 +649,7 @@ export const styles = StyleSheet.create({
     minHeight: 62,
   },
   durationPillUnselected: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.border,
+    ...Glass.card,
   },
   durationPillSelected: {
     backgroundColor: Colors.primary,
@@ -561,11 +681,10 @@ export const styles = StyleSheet.create({
   muscleTargetingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
+    ...Glass.card,
     borderRadius: Radii.card,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     gap: 14,
   },
   muscleAnatomyBox: {
@@ -631,8 +750,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   jointChipSafe: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.border,
+    ...Glass.card,
   },
   jointChipExcluded: {
     backgroundColor: 'rgba(255, 107, 107, 0.14)',
@@ -657,9 +775,65 @@ export const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
+  // Progressive Disclosure Fine-Tune Card
+  fineTuneCard: {
+    ...Glass.card,
+    borderRadius: Radii.card,
+    borderWidth: 1,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  fineTuneHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    gap: 12,
+  },
+  fineTuneTitleWrap: {
+    flex: 1,
+  },
+  fineTuneEyebrow: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: Colors.textMuted,
+    letterSpacing: 2,
+    marginBottom: 4,
+  },
+  fineTuneTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    letterSpacing: -0.2,
+    marginBottom: 3,
+  },
+  fineTuneSummary: {
+    fontSize: 11.5,
+    color: Colors.textSecondary,
+  },
+  fineTuneTogglePill: {
+    backgroundColor: Colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Colors.borderStrong,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    borderRadius: Radii.control,
+  },
+  fineTuneToggleText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  fineTuneBody: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+
   // Feedback Memory Card
   feedbackMemoryCard: {
-    backgroundColor: Colors.surface,
+    ...Glass.card,
     borderRadius: Radii.card,
     padding: 16,
     marginBottom: 24,
@@ -741,12 +915,18 @@ export const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    backgroundColor: 'rgba(25, 7, 39, 0.92)',
+    ...Glass.bar,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
     paddingHorizontal: 16,
-    paddingTop: 12,
-    ...glassCardWeb,
+    paddingTop: 10,
+  },
+  bottomBarSummary: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    marginBottom: 8,
+    textAlign: 'center',
+    maxWidth: 648,
   },
   primaryButton: {
     backgroundColor: Colors.primary,

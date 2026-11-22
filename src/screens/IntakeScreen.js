@@ -1,11 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
+  Text,
+  TouchableOpacity,
   ScrollView,
   StatusBar,
   Animated,
   Easing,
-  ImageBackground,
+  Image,
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +19,8 @@ import ConfirmModal from '../components/ConfirmModal';
 
 import SavedRoutineBanner from '../components/intake/SavedRoutineBanner';
 import ArchitectureMetricBar from '../components/intake/ArchitectureMetricBar';
-import GoalSelectionSection from '../components/intake/GoalSelectionSection';
+import ProgramStepGuide from '../components/intake/ProgramStepGuide';
+import GoalSelectionSection, { GOAL_OPTIONS } from '../components/intake/GoalSelectionSection';
 import LocationSelectionSection from '../components/intake/LocationSelectionSection';
 import FrequencySelectionSection from '../components/intake/FrequencySelectionSection';
 import DurationSelectionSection from '../components/intake/DurationSelectionSection';
@@ -48,6 +51,11 @@ export default function IntakeScreen({ navigation }) {
   const resetFeedback = useWorkoutStore((state) => state.resetFeedback);
 
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
+  const [fineTuneOpen, setFineTuneOpen] = useState(false);
+  const [activeStep, setActiveStep] = useState(1);
+
+  const scrollViewRef = useRef(null);
+  const stepOffsetsRef = useRef({});
 
   const selectedGoal = userProfile.primaryGoal || 'Hypertrophy / Muscle';
   const selectedLocation = logistics.location || 'Commercial Gym';
@@ -59,6 +67,29 @@ export default function IntakeScreen({ navigation }) {
   const dislikedCount = (feedback?.dislikedExerciseIds || []).length;
   const hasFeedbackMemory =
     likedCount > 0 || dislikedCount > 0 || (feedback?.intensityRating && feedback.intensityRating !== 'optimal');
+
+  const selectedGoalOption = GOAL_OPTIONS.find(
+    (item) => selectedGoal === item.id || selectedGoal === item.title
+  );
+  const goalDisplayTitle = selectedGoalOption ? selectedGoalOption.title : selectedGoal;
+  const bottomBarSummaryText = `${goalDisplayTitle} • ${selectedLocation} • ${selectedFrequency}d/wk • ${selectedDuration}m`;
+
+  const handleJumpToStep = (stepNum) => {
+    setActiveStep(stepNum);
+    const targetY = stepOffsetsRef.current[stepNum];
+    if (typeof targetY === 'number' && scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ y: Math.max(0, targetY - 14), animated: true });
+    }
+  };
+
+  const fineTuneSummary = [
+    selectedFocusAreas.length > 0
+      ? `${selectedFocusAreas.length} muscle${selectedFocusAreas.length > 1 ? 's' : ''} boosted`
+      : 'Balanced focus',
+    selectedExclusions.length > 0
+      ? `${selectedExclusions.length} joint${selectedExclusions.length > 1 ? 's' : ''} shielded`
+      : 'Full joint tolerance',
+  ].join(' • ');
 
   // Dynamic Science-Based Volume Calculation
   const volumeEstimate = estimateWeeklyVolume({
@@ -75,18 +106,19 @@ export default function IntakeScreen({ navigation }) {
   const entranceHeroSlide = useRef(new Animated.Value(12)).current;
 
   useEffect(() => {
+    const useNative = Platform.OS !== 'web';
     Animated.parallel([
       Animated.timing(entranceHeroAnim, {
         toValue: 1,
         duration: 420,
         easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
+        useNativeDriver: useNative,
       }),
       Animated.timing(entranceHeroSlide, {
         toValue: 0,
         duration: 420,
         easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
+        useNativeDriver: useNative,
       }),
     ]).start();
   }, []);
@@ -104,40 +136,39 @@ export default function IntakeScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
 
       {/* Full-bleed Atmospheric Ripe Figs Hero Backdrop */}
-      <View style={styles.heroBackdropWrap} pointerEvents="none">
-        <ImageBackground
+      <View style={[styles.heroBackdropWrap, { pointerEvents: 'none' }]}>
+        <Image
           source={FIG_HERO_BG}
-          style={styles.heroBackdropImage}
-          imageStyle={styles.heroBackdropImageInner}
+          style={[styles.heroBackdropImage, styles.heroBackdropImageInner]}
           resizeMode="cover"
-        >
-          {Platform.OS === 'web' ? (
-            <View style={styles.heroBackdropGradientWeb} />
-          ) : (
-            <Svg width="100%" height="100%" style={styles.heroBackdropSvg}>
-              <Defs>
-                <SvgLinearGradient id="figHeroFade" x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0" stopColor="#190727" stopOpacity="0.58" />
-                  <Stop offset="0.38" stopColor="#190727" stopOpacity="0.38" />
-                  <Stop offset="0.78" stopColor="#190727" stopOpacity="0.86" />
-                  <Stop offset="1" stopColor="#190727" stopOpacity="1" />
-                </SvgLinearGradient>
-              </Defs>
-              <Rect x="0" y="0" width="100%" height="100%" fill="url(#figHeroFade)" />
-            </Svg>
-          )}
-        </ImageBackground>
+        />
+        {Platform.OS === 'web' ? (
+          <View style={styles.heroBackdropGradientWeb} />
+        ) : (
+          <Svg width="100%" height="100%" style={styles.heroBackdropSvg}>
+            <Defs>
+              <SvgLinearGradient id="figHeroFade" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor="#190727" stopOpacity="0.52" />
+                <Stop offset="0.42" stopColor="#190727" stopOpacity="0.20" />
+                <Stop offset="0.82" stopColor="#190727" stopOpacity="0.76" />
+                <Stop offset="1" stopColor="#190727" stopOpacity="1" />
+              </SvgLinearGradient>
+            </Defs>
+            <Rect x="0" y="0" width="100%" height="100%" fill="url(#figHeroFade)" />
+          </Svg>
+        )}
       </View>
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: Math.max(insets.top, 20), paddingBottom: insets.bottom + 116 },
+          { paddingTop: Math.max(insets.top, 20), paddingBottom: insets.bottom + 132 },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Top Header: Active Saved Blueprint or Brand Masthead */}
+        {/* Top Header: Minimal Brand Masthead or Active Saved Blueprint */}
         <SavedRoutineBanner
           generatedRoutine={generatedRoutine}
           isEdited={isEdited}
@@ -146,52 +177,120 @@ export default function IntakeScreen({ navigation }) {
           onViewPlan={() => navigation.navigate('Routine')}
         />
 
-        {/* Frosted Glass Hero Blueprint Card (Figma 1001:94) */}
+        {/* Frosted Glass Hero Blueprint Card */}
         <ArchitectureMetricBar
           estimatedWeeklySets={estimatedWeeklySets}
           selectedFrequency={selectedFrequency}
           selectedLocation={selectedLocation}
-          selectedDuration={selectedDuration}
           selectedExclusions={selectedExclusions}
           entranceHeroAnim={entranceHeroAnim}
           entranceHeroSlide={entranceHeroSlide}
         />
 
-        {/* Primary Goal: Acid Lime Hero Card + Collapsed Plum Steppers (Figma 1001:96) */}
-        <GoalSelectionSection
+        {/* Guided 4-Step Quick Navigator */}
+        <ProgramStepGuide
           selectedGoal={selectedGoal}
-          onSelectGoal={setPrimaryGoal}
-        />
-
-        {/* Environment & Equipment */}
-        <LocationSelectionSection
           selectedLocation={selectedLocation}
-          onSelectLocation={setLocation}
-        />
-
-        {/* Weekly Frequency */}
-        <FrequencySelectionSection
           selectedFrequency={selectedFrequency}
-          onSelectFrequency={setFrequencyDays}
-        />
-
-        {/* Target Session Duration */}
-        <DurationSelectionSection
           selectedDuration={selectedDuration}
-          onSelectDuration={setDurationMinutes}
+          activeStep={activeStep}
+          onJumpToStep={handleJumpToStep}
         />
 
-        {/* Target Muscle Priority */}
-        <FocusMuscleSection
-          selectedFocusAreas={selectedFocusAreas}
-          onToggleFocusArea={toggleFocusArea}
-        />
+        {/* Step 1: Primary Goal */}
+        <View
+          onLayout={(e) => {
+            stepOffsetsRef.current[1] = e.nativeEvent.layout.y;
+          }}
+        >
+          <GoalSelectionSection
+            selectedGoal={selectedGoal}
+            onSelectGoal={(goalId) => {
+              setPrimaryGoal(goalId);
+              setActiveStep(1);
+            }}
+          />
+        </View>
 
-        {/* Joint Sensitivity / Exclusions */}
-        <JointExclusionSection
-          selectedExclusions={selectedExclusions}
-          onToggleExclusion={toggleExclusionZone}
-        />
+        {/* Step 2: Environment & Equipment */}
+        <View
+          onLayout={(e) => {
+            stepOffsetsRef.current[2] = e.nativeEvent.layout.y;
+          }}
+        >
+          <LocationSelectionSection
+            selectedLocation={selectedLocation}
+            onSelectLocation={(locId) => {
+              setLocation(locId);
+              setActiveStep(2);
+            }}
+          />
+        </View>
+
+        {/* Step 3: Weekly Frequency */}
+        <View
+          onLayout={(e) => {
+            stepOffsetsRef.current[3] = e.nativeEvent.layout.y;
+          }}
+        >
+          <FrequencySelectionSection
+            selectedFrequency={selectedFrequency}
+            onSelectFrequency={(days) => {
+              setFrequencyDays(days);
+              setActiveStep(3);
+            }}
+          />
+        </View>
+
+        {/* Step 4: Target Session Duration */}
+        <View
+          onLayout={(e) => {
+            stepOffsetsRef.current[4] = e.nativeEvent.layout.y;
+          }}
+        >
+          <DurationSelectionSection
+            selectedDuration={selectedDuration}
+            onSelectDuration={(mins) => {
+              setDurationMinutes(mins);
+              setActiveStep(4);
+            }}
+          />
+        </View>
+
+        {/* Optional Progressive Disclosure: Muscle Priority & Joint Safety */}
+        <View style={styles.fineTuneCard}>
+          <TouchableOpacity
+            style={styles.fineTuneHeader}
+            activeOpacity={0.75}
+            onPress={() => setFineTuneOpen((prev) => !prev)}
+            accessibilityRole="button"
+            accessibilityLabel="Toggle optional muscle focus and joint safety settings"
+          >
+            <View style={styles.fineTuneTitleWrap}>
+              <Text style={styles.fineTuneEyebrow}>OPTIONAL • SKIP IF UNSURE</Text>
+              <Text style={styles.fineTuneTitle}>Muscle Focus &amp; Joint Shields</Text>
+              <Text style={styles.fineTuneSummary}>{fineTuneSummary}</Text>
+            </View>
+            <View style={styles.fineTuneTogglePill}>
+              <Text style={styles.fineTuneToggleText}>
+                {fineTuneOpen ? 'Done ↑' : 'Customize ↓'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {fineTuneOpen && (
+            <View style={styles.fineTuneBody}>
+              <FocusMuscleSection
+                selectedFocusAreas={selectedFocusAreas}
+                onToggleFocusArea={toggleFocusArea}
+              />
+              <JointExclusionSection
+                selectedExclusions={selectedExclusions}
+                onToggleExclusion={toggleExclusionZone}
+              />
+            </View>
+          )}
+        </View>
 
         {/* Active Feedback Memory Banner */}
         <FeedbackMemoryBanner
@@ -210,6 +309,7 @@ export default function IntakeScreen({ navigation }) {
       <IntakeBottomBar
         insetsBottom={insets.bottom}
         hasExistingRoutine={Boolean(generatedRoutine)}
+        summaryText={bottomBarSummaryText}
         onGenerate={handleGenerate}
       />
 

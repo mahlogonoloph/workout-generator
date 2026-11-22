@@ -8,6 +8,7 @@ import {
   Animated,
   Easing,
   Platform,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../theme/colors';
@@ -27,6 +28,8 @@ import ExerciseCard from '../components/routine/ExerciseCard';
 import RoutineDisclaimer from '../components/routine/RoutineDisclaimer';
 import RoutineBottomBar from '../components/routine/RoutineBottomBar';
 import styles from './RoutineScreen.styles';
+
+const FIG_HERO_BG = require('../../assets/fig-hero-bg.jpg');
 
 export default function RoutineScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -95,18 +98,19 @@ export default function RoutineScreen({ navigation }) {
   const handleDaySelect = (index) => {
     if (index === activeDayIndex) return;
     setOpenSwapCardId(null);
+    const useNative = Platform.OS !== 'web';
     Animated.sequence([
       Animated.timing(dayFadeAnim, {
         toValue: 0.15,
         duration: 90,
         easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
+        useNativeDriver: useNative,
       }),
       Animated.timing(dayFadeAnim, {
         toValue: 1,
         duration: 200,
         easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
+        useNativeDriver: useNative,
       }),
     ]).start();
     setActiveDayIndex(index);
@@ -114,18 +118,19 @@ export default function RoutineScreen({ navigation }) {
 
   const handleLikeToggle = (catalogKey) => {
     setAnimatingHeartKey(catalogKey);
+    const useNative = Platform.OS !== 'web';
     Animated.sequence([
       Animated.timing(heartPopAnim, {
         toValue: 1.35,
         duration: 100,
         easing: Easing.out(Easing.back(2)),
-        useNativeDriver: true,
+        useNativeDriver: useNative,
       }),
       Animated.spring(heartPopAnim, {
         toValue: 1,
         friction: 4,
         tension: 80,
-        useNativeDriver: true,
+        useNativeDriver: useNative,
       }),
     ]).start(() => {
       setAnimatingHeartKey((prev) => (prev === catalogKey ? null : prev));
@@ -292,6 +297,16 @@ export default function RoutineScreen({ navigation }) {
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
+
+      {/* Subtle Ambient Fig Backdrop for Frosted Glass Refraction */}
+      <View style={[styles.ambientBackdropWrap, { pointerEvents: 'none' }]}>
+        <Image
+          source={FIG_HERO_BG}
+          style={[styles.ambientBackdropImage, styles.ambientBackdropImageInner]}
+          resizeMode="cover"
+        />
+        <View style={styles.ambientBackdropOverlay} />
+      </View>
 
       <ScrollView
         style={styles.scrollView}

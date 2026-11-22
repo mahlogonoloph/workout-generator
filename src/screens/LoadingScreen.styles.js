@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { Colors, Radii } from '../theme/colors';
+import { Colors, Radii, Glass } from '../theme/colors';
 
 export const styles = StyleSheet.create({
   screen: {
@@ -116,11 +116,10 @@ export const styles = StyleSheet.create({
   statusContainer: {
     width: '100%',
     maxWidth: 520,
-    backgroundColor: Colors.surface,
+    ...Glass.card,
     borderRadius: Radii.card,
     padding: 20,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   stageText: {
     fontSize: 14.5,

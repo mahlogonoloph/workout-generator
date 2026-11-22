@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, PanResponder } from 'react-native';
 import styles from '../../screens/IntakeScreen.styles';
 import {
   GoalIcon,
@@ -14,12 +14,13 @@ export const GOAL_OPTIONS = [
     shortLabel: 'HYPERTROPHY',
     desc: 'Maximal muscular volume & structural density.',
     bg: '#D7FF35',
+    collapsedBg: '#2C3319',
     ink: '#190727',
     subInk: 'rgba(25, 7, 39, 0.78)',
     dotInactive: 'rgba(25, 7, 39, 0.25)',
     badgeBg: '#190727',
     badgeCheck: '#D7FF35',
-    border: 'transparent',
+    border: 'rgba(255, 255, 255, 0.08)',
   },
   {
     id: 'Strength & Power',
@@ -27,6 +28,7 @@ export const GOAL_OPTIONS = [
     shortLabel: 'STRENGTH',
     desc: 'Heavy progressive overload on compound lifts.',
     bg: '#5C2365',
+    collapsedBg: '#36153D',
     ink: '#FFFFFF',
     subInk: 'rgba(255, 255, 255, 0.78)',
     dotInactive: 'rgba(255, 255, 255, 0.28)',
@@ -39,13 +41,14 @@ export const GOAL_OPTIONS = [
     title: 'Endurance',
     shortLabel: 'ENDURANCE',
     desc: 'Aerobic work capacity, pacing & conditioning.',
-    bg: '#260E3B',
+    bg: '#2E1447',
+    collapsedBg: '#1F0C31',
     ink: '#FFFFFF',
     subInk: 'rgba(255, 255, 255, 0.76)',
     dotInactive: 'rgba(255, 255, 255, 0.28)',
     badgeBg: '#D7FF35',
     badgeCheck: '#190727',
-    border: 'rgba(255, 255, 255, 0.16)',
+    border: 'rgba(255, 255, 255, 0.14)',
   },
   {
     id: 'Fat Loss & Tone',
@@ -53,6 +56,7 @@ export const GOAL_OPTIONS = [
     shortLabel: 'FAT LOSS',
     desc: 'High metabolic output & density circuits.',
     bg: '#A62D52',
+    collapsedBg: '#401627',
     ink: '#FFFFFF',
     subInk: 'rgba(255, 255, 255, 0.80)',
     dotInactive: 'rgba(255, 255, 255, 0.28)',
@@ -66,6 +70,7 @@ export const GOAL_OPTIONS = [
     shortLabel: 'LONGEVITY',
     desc: 'Joint resilience, posture & range of motion.',
     bg: '#215B4A',
+    collapsedBg: '#163029',
     ink: '#FFFFFF',
     subInk: 'rgba(255, 255, 255, 0.80)',
     dotInactive: 'rgba(255, 255, 255, 0.28)',
@@ -76,6 +81,8 @@ export const GOAL_OPTIONS = [
 ];
 
 const DECK_GAP = 6;
+const SWIPE_DISTANCE_THRESHOLD = 32;
+const SWIPE_VELOCITY_THRESHOLD = 0.35;
 
 export default function GoalSelectionSection({
   selectedGoal,
@@ -90,7 +97,63 @@ export default function GoalSelectionSection({
 
   const [deckWidth, setDeckWidth] = useState(0);
 
-  // One Animated.Value per goal page: 1 = expanded primary card, 0 = collapsed cascading page
+  // Refs so PanResponder always reads the latest activeIndex & callback
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
+  const onSelectGoalRef = useRef(onSelectGoal);
+  onSelectGoalRef.current = onSelectGoal;
+
+  // Live horizontal drag offset for tactile slide feedback
+  const dragX = useRef(new Animated.Value(0)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dx) > 10 &&
+        Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.2,
+      onMoveShouldSetPanResponderCapture: (_, gestureState) =>
+        Math.abs(gestureState.dx) > 12 &&
+        Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.2,
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderMove: (_, gestureState) => {
+        const clamped = Math.max(-28, Math.min(28, gestureState.dx * 0.35));
+        dragX.setValue(clamped);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const currentIdx = activeIndexRef.current;
+        const swipedNext =
+          gestureState.dx < -SWIPE_DISTANCE_THRESHOLD ||
+          gestureState.vx < -SWIPE_VELOCITY_THRESHOLD;
+        const swipedPrev =
+          gestureState.dx > SWIPE_DISTANCE_THRESHOLD ||
+          gestureState.vx > SWIPE_VELOCITY_THRESHOLD;
+
+        if (swipedNext && currentIdx < GOAL_OPTIONS.length - 1) {
+          onSelectGoalRef.current?.(GOAL_OPTIONS[currentIdx + 1].id);
+        } else if (swipedPrev && currentIdx > 0) {
+          onSelectGoalRef.current?.(GOAL_OPTIONS[currentIdx - 1].id);
+        }
+
+        Animated.spring(dragX, {
+          toValue: 0,
+          tension: 90,
+          friction: 12,
+          useNativeDriver: false,
+        }).start();
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(dragX, {
+          toValue: 0,
+          tension: 90,
+          friction: 12,
+          useNativeDriver: false,
+        }).start();
+      },
+    })
+  ).current;
+
+  // One Animated.Value per goal page: 1 = expanded primary card, 0 = quiet collapsed spine
   const pageAnims = useRef(
     GOAL_OPTIONS.map((_, idx) => new Animated.Value(idx === activeIndex ? 1 : 0))
   ).current;
@@ -110,7 +173,6 @@ export default function GoalSelectionSection({
 
   const numPages = GOAL_OPTIONS.length;
   const totalGaps = DECK_GAP * (numPages - 1);
-  // Responsive collapsed spine width: 32px on narrow phones, up to 48px on wider screens
   const collapsedWidth =
     deckWidth > 0
       ? Math.max(30, Math.min(48, Math.floor((deckWidth - 204) / (numPages - 1))))
@@ -122,8 +184,20 @@ export default function GoalSelectionSection({
 
   return (
     <View style={styles.goalDeckSection}>
+      <View style={styles.stepBadgeRow}>
+        <View style={styles.stepPillBadge}>
+          <Text style={styles.stepPillBadgeText}>STEP 1 OF 4</Text>
+        </View>
+        <Text style={styles.stepActionHint}>Swipe or tap to choose</Text>
+      </View>
+      <Text style={styles.sectionTitle}>Choose Your Primary Goal</Text>
+      <Text style={styles.sectionSubtitle}>
+        Swipe left or right, or tap any side tab to set your training focus
+      </Text>
+
       <View
         style={styles.goalDeckRow}
+        {...panResponder.panHandlers}
         onLayout={(e) => {
           const w = Math.floor(e.nativeEvent.layout.width);
           if (w > 0 && Math.abs(w - deckWidth) > 1) {
@@ -134,6 +208,11 @@ export default function GoalSelectionSection({
         {GOAL_OPTIONS.map((item, idx) => {
           const isActive = idx === activeIndex;
           const anim = pageAnims[idx];
+
+          const animatedBg = anim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [item.collapsedBg, item.bg],
+          });
 
           const animatedCardStyle =
             deckWidth > 0
@@ -169,17 +248,19 @@ export default function GoalSelectionSection({
               style={[
                 styles.goalCascadePage,
                 {
-                  backgroundColor: item.bg,
-                  borderColor: item.border,
-                  borderWidth: item.border === 'transparent' ? 0 : 1,
+                  backgroundColor: animatedBg,
+                  borderColor: isActive ? 'transparent' : item.border,
+                  borderWidth: 1,
                 },
                 animatedCardStyle,
               ]}
             >
-              {/* Collapsed Spine View (tappable to expand this goal page) */}
+              {/* Quiet Collapsed Spine View (tappable to expand this goal page) */}
               <Animated.View
-                style={[styles.goalSpineLayer, { opacity: spineOpacity }]}
-                pointerEvents={isActive ? 'none' : 'auto'}
+                style={[
+                  styles.goalSpineLayer,
+                  { opacity: spineOpacity, pointerEvents: isActive ? 'none' : 'auto' },
+                ]}
               >
                 <TouchableOpacity
                   style={styles.goalSpineTouchable}
@@ -190,13 +271,13 @@ export default function GoalSelectionSection({
                 >
                   <View style={styles.goalSpineLabelWrap}>
                     <Text
-                      style={[styles.goalSpineLabel, { color: item.ink }]}
+                      style={styles.goalSpineLabelMuted}
                       numberOfLines={1}
                     >
                       {item.shortLabel}
                     </Text>
                   </View>
-                  <ArrowRightCircleIcon size={15} color={item.ink} />
+                  <ArrowRightCircleIcon size={14} color="rgba(255, 255, 255, 0.62)" />
                 </TouchableOpacity>
               </Animated.View>
 
@@ -206,10 +287,13 @@ export default function GoalSelectionSection({
                   styles.goalExpandedLayer,
                   {
                     opacity: expandedOpacity,
-                    transform: [{ translateY: expandedTranslateY }],
+                    pointerEvents: isActive ? 'auto' : 'none',
+                    transform: [
+                      { translateY: expandedTranslateY },
+                      { translateX: isActive ? dragX : 0 },
+                    ],
                   },
                 ]}
-                pointerEvents={isActive ? 'auto' : 'none'}
               >
                 <View style={styles.goalHeroTopRow}>
                   <Text
