@@ -440,53 +440,62 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
     .exercise-tracking-row td {
       background-color: #FAF7F9;
       border-bottom: 2px solid #EAD8DF;
-      padding: 5px 8px 7px 8px;
+      padding: 6px 8px 8px 8px;
     }
     .tracking-row-inner {
       display: flex;
-      align-items: center;
+      align-items: stretch;
       gap: 8px;
+      width: 100%;
     }
     .tracking-label-col {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      justify-content: center;
-      width: 62px;
+      justify-content: space-between;
+      width: 54px;
       flex-shrink: 0;
     }
     .tracking-label-title {
-      font-size: 8px;
+      font-size: 7.5px;
       font-weight: 800;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.4px;
       text-transform: uppercase;
       color: #7D4F38;
-      line-height: 1.1;
+      line-height: 11px;
+      white-space: nowrap;
     }
     .tracking-label-sub {
       font-size: 7.5px;
       font-weight: 600;
       color: #9E8899;
-      line-height: 1.1;
+      height: 22px;
+      line-height: 22px;
+      white-space: nowrap;
     }
     .tracking-matrix-grid {
       flex: 1;
+      min-width: 0;
+      width: 100%;
       display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 5px;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 4px;
     }
     .tracking-cell {
       display: flex;
       flex-direction: column;
       align-items: stretch;
+      min-width: 0;
       text-align: center;
     }
     .tracking-cell-header {
-      font-size: 7.5px;
+      font-size: 7px;
       font-weight: 800;
       color: #564459;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
+      line-height: 11px;
+      height: 11px;
       margin-bottom: 2px;
       white-space: nowrap;
       overflow: hidden;
@@ -500,22 +509,26 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
       border: 1px dashed #C84663;
       border-radius: 4px;
       background: #FFFFFF;
-      height: 20px;
+      height: 22px;
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 0 2px;
+      overflow: hidden;
     }
     .tracking-cell-box.deload-box {
       border: 1px dashed #2F6F5E;
       background: #F4F8F6;
     }
     .tracking-cell-blank {
-      font-size: 9px;
+      font-size: 8.5px;
       font-family: 'Courier New', Courier, monospace, -apple-system;
       font-weight: 600;
       color: #9A8396;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      line-height: 1;
       user-select: none;
     }
 
@@ -816,35 +829,35 @@ export function buildWorkoutHtml({ routine, userProfile, logistics, targeting })
                   <div class="tracking-matrix-grid">
                     <div class="tracking-cell">
                       <span class="tracking-cell-header">W1</span>
-                      <div class="tracking-cell-box"><span class="tracking-cell-blank">___ / ___</span></div>
+                      <div class="tracking-cell-box"><span class="tracking-cell-blank">__ / __</span></div>
                     </div>
                     <div class="tracking-cell">
                       <span class="tracking-cell-header">W2</span>
-                      <div class="tracking-cell-box"><span class="tracking-cell-blank">___ / ___</span></div>
+                      <div class="tracking-cell-box"><span class="tracking-cell-blank">__ / __</span></div>
                     </div>
                     <div class="tracking-cell">
                       <span class="tracking-cell-header">W3</span>
-                      <div class="tracking-cell-box"><span class="tracking-cell-blank">___ / ___</span></div>
+                      <div class="tracking-cell-box"><span class="tracking-cell-blank">__ / __</span></div>
                     </div>
                     <div class="tracking-cell">
                       <span class="tracking-cell-header">W4</span>
-                      <div class="tracking-cell-box"><span class="tracking-cell-blank">___ / ___</span></div>
+                      <div class="tracking-cell-box"><span class="tracking-cell-blank">__ / __</span></div>
                     </div>
                     <div class="tracking-cell">
                       <span class="tracking-cell-header">W5</span>
-                      <div class="tracking-cell-box"><span class="tracking-cell-blank">___ / ___</span></div>
+                      <div class="tracking-cell-box"><span class="tracking-cell-blank">__ / __</span></div>
                     </div>
                     <div class="tracking-cell">
                       <span class="tracking-cell-header">W6</span>
-                      <div class="tracking-cell-box"><span class="tracking-cell-blank">___ / ___</span></div>
+                      <div class="tracking-cell-box"><span class="tracking-cell-blank">__ / __</span></div>
                     </div>
                     <div class="tracking-cell">
                       <span class="tracking-cell-header">W7</span>
-                      <div class="tracking-cell-box"><span class="tracking-cell-blank">___ / ___</span></div>
+                      <div class="tracking-cell-box"><span class="tracking-cell-blank">__ / __</span></div>
                     </div>
                     <div class="tracking-cell tracking-cell-deload">
-                      <span class="tracking-cell-header deload-header">W8 (Deload)</span>
-                      <div class="tracking-cell-box deload-box"><span class="tracking-cell-blank">___ / ___</span></div>
+                      <span class="tracking-cell-header deload-header">W8 Deload</span>
+                      <div class="tracking-cell-box deload-box"><span class="tracking-cell-blank">__ / __</span></div>
                     </div>
                   </div>
                 </div>
