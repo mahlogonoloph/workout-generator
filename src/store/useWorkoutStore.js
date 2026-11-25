@@ -7,6 +7,7 @@ import {
   getPrescription,
   hydrateExerciseForSchedule,
 } from '../api/generationClient.js';
+import { syncWidgetSnapshot } from '../utils/widgetBridge.js';
 
 /**
  * Global Store Schema (Zustand) with Biomechanical Taxonomy & User Feedback Loop
@@ -37,6 +38,17 @@ const initialFeedback = {
   preferSimplerMovements: false,
 };
 
+const initialActiveCycle = {
+  isActive: false,
+  startedAt: null,
+  startDayIndex: 0,
+  currentDayIndex: 0,
+  currentWeek: 1,
+  completedInCycle: 0,
+  totalWorkoutsCompleted: 0,
+  lastCompletedAt: null,
+};
+
 export const useWorkoutStore = create(
   persist(
     (set, get) => ({
@@ -44,6 +56,7 @@ export const useWorkoutStore = create(
   logistics: { ...initialLogistics },
   targeting: { ...initialTargeting },
   feedback: { ...initialFeedback },
+  activeCycle: { ...initialActiveCycle },
   isGenerating: false,
   generatedRoutine: null,
   originalGeneratedRoutine: null,
@@ -601,6 +614,86 @@ export const useWorkoutStore = create(
       feedback: { ...initialFeedback },
     }),
 
+  // =========================================================================
+  // ACTIVE CYCLE & TODAY'S WORKOUT ACTIONS
+  // =========================================================================
+
+  startProgramCycle: (startDayIndex = 0) => {
+    set((state) => {
+      const schedule = state.generatedRoutine?.schedule || [];
+      if (schedule.length === 0) return state;
+
+      const safeIndex = Math.max(0, Math.min(startDayIndex, schedule.length - 1));
+      const nextCycle = {
+        isActive: true,
+        startedAt: new Date().toISOString(),
+        startDayIndex: safeIndex,
+        currentDayIndex: safeIndex,
+        currentWeek: 1,
+        completedInCycle: 0,
+        totalWorkoutsCompleted: 0,
+        lastCompletedAt: null,
+      };
+      syncWidgetSnapshot({ ...state, activeCycle: nextCycle });
+      return { activeCycle: nextCycle };
+    });
+  },
+
+  completeCurrentWorkout: () => {
+    set((state) => {
+      const schedule = state.generatedRoutine?.schedule || [];
+      if (!state.activeCycle?.isActive || schedule.length === 0) return state;
+
+      const cycleLengthWeeks = state.userProfile?.cycleLengthWeeks || 8;
+      const totalDays = schedule.length;
+      const nextDayIndex = ((state.activeCycle.currentDayIndex || 0) + 1) % totalDays;
+      const nextCompletedInCycle = (state.activeCycle.completedInCycle || 0) + 1;
+      const wrappedWeek = nextCompletedInCycle >= totalDays;
+
+      const nextWeek = wrappedWeek
+        ? ((state.activeCycle.currentWeek || 1) >= cycleLengthWeeks
+            ? 1
+            : (state.activeCycle.currentWeek || 1) + 1)
+        : state.activeCycle.currentWeek || 1;
+
+      const nextCycle = {
+        ...state.activeCycle,
+        currentDayIndex: nextDayIndex,
+        currentWeek: nextWeek,
+        completedInCycle: wrappedWeek ? 0 : nextCompletedInCycle,
+        totalWorkoutsCompleted: (state.activeCycle.totalWorkoutsCompleted || 0) + 1,
+        lastCompletedAt: new Date().toISOString(),
+      };
+      syncWidgetSnapshot({ ...state, activeCycle: nextCycle });
+      return { activeCycle: nextCycle };
+    });
+  },
+
+  setCycleDay: (dayIndex) => {
+    set((state) => {
+      const schedule = state.generatedRoutine?.schedule || [];
+      if (schedule.length === 0) return state;
+
+      const safeIndex = Math.max(0, Math.min(dayIndex, schedule.length - 1));
+      const nextCycle = {
+        ...state.activeCycle,
+        isActive: true,
+        startedAt: state.activeCycle?.startedAt || new Date().toISOString(),
+        currentDayIndex: safeIndex,
+      };
+      syncWidgetSnapshot({ ...state, activeCycle: nextCycle });
+      return { activeCycle: nextCycle };
+    });
+  },
+
+  resetCycle: () => {
+    set((state) => {
+      const nextCycle = { ...initialActiveCycle };
+      syncWidgetSnapshot({ ...state, activeCycle: nextCycle });
+      return { activeCycle: nextCycle };
+    });
+  },
+
   // Status & Routine Setters
   setIsGenerating: (isGenerating) => set({ isGenerating }),
   setError: (error) => set({ error }),
@@ -620,6 +713,7 @@ export const useWorkoutStore = create(
       logistics: { ...initialLogistics },
       targeting: { ...initialTargeting },
       feedback: { ...initialFeedback },
+      activeCycle: { ...initialActiveCycle },
       isGenerating: false,
       generatedRoutine: null,
       originalGeneratedRoutine: null,
@@ -633,13 +727,16 @@ export const useWorkoutStore = create(
     try {
       const currentState = get();
       const plan = await apiGenerateWorkout(currentState);
+      const nextCycle = { ...initialActiveCycle };
       set({
         generatedRoutine: plan,
         originalGeneratedRoutine: JSON.parse(JSON.stringify(plan)),
+        activeCycle: nextCycle,
         isEdited: false,
         isGenerating: false,
         error: null,
       });
+      syncWidgetSnapshot({ ...currentState, generatedRoutine: plan, activeCycle: nextCycle });
       return { success: true, plan };
     } catch (err) {
       const errorMessage = err?.message || 'Failed to generate a safe workout plan.';
@@ -660,6 +757,7 @@ export const useWorkoutStore = create(
         logistics: state.logistics,
         targeting: state.targeting,
         feedback: state.feedback,
+        activeCycle: state.activeCycle,
         generatedRoutine: state.generatedRoutine,
         originalGeneratedRoutine: state.originalGeneratedRoutine,
         isEdited: state.isEdited,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ export default function ExerciseCard({
   isFirst = false,
   isLast = false,
   isLiked = false,
+  initialExpanded = false,
   isSwapDrawerOpen = false,
   animatingHeartKey = null,
   heartPopAnim = null,
@@ -29,7 +30,12 @@ export default function ExerciseCard({
   onSelectSwapReason,
   onDirectSubstitutionTap,
 }) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(initialExpanded);
+  useEffect(() => {
+    if (initialExpanded) {
+      setIsExpanded(true);
+    }
+  }, [initialExpanded]);
   const showDetails = isExpanded || isSwapDrawerOpen;
 
   const catalogKey = exercise.catalogId || exercise.id;

@@ -27,6 +27,7 @@ import WarmupCard from '../components/routine/WarmupCard';
 import ExerciseCard from '../components/routine/ExerciseCard';
 import RoutineDisclaimer from '../components/routine/RoutineDisclaimer';
 import RoutineBottomBar from '../components/routine/RoutineBottomBar';
+import StartCycleModal from '../components/StartCycleModal';
 import styles from './RoutineScreen.styles';
 
 const FIG_HERO_BG = require('../../assets/fig-hero-bg.jpg');
@@ -40,6 +41,8 @@ export default function RoutineScreen({ navigation }) {
   const feedback = useWorkoutStore((state) => state.feedback);
   const isEdited = useWorkoutStore((state) => state.isEdited);
   const originalGeneratedRoutine = useWorkoutStore((state) => state.originalGeneratedRoutine);
+  const activeCycle = useWorkoutStore((state) => state.activeCycle);
+  const startProgramCycle = useWorkoutStore((state) => state.startProgramCycle);
 
   const toggleLikeExercise = useWorkoutStore((state) => state.toggleLikeExercise);
   const swapExerciseWithFeedback = useWorkoutStore((state) => state.swapExerciseWithFeedback);
@@ -79,6 +82,7 @@ export default function RoutineScreen({ navigation }) {
   const [openSwapCardId, setOpenSwapCardId] = useState(null);
   const [editingModalData, setEditingModalData] = useState(null);
   const [confirmModalConfig, setConfirmModalConfig] = useState(null);
+  const [isStartCycleModalOpen, setIsStartCycleModalOpen] = useState(false);
   const [catalogModalConfig, setCatalogModalConfig] = useState({
     visible: false,
     mode: 'add',
@@ -471,8 +475,30 @@ export default function RoutineScreen({ navigation }) {
       <RoutineBottomBar
         insetsBottom={insets.bottom}
         isDownloading={isDownloading}
+        isCycleActive={!!activeCycle?.isActive}
+        currentDayNumber={(activeCycle?.currentDayIndex || 0) + 1}
+        onStartOrOpenToday={() => {
+          if (activeCycle?.isActive) {
+            navigation.navigate('Today');
+          } else {
+            setIsStartCycleModalOpen(true);
+          }
+        }}
         onDownloadPdf={handleDownloadPdf}
         onReconfigure={() => navigation.navigate('Intake')}
+      />
+
+      {/* Start Program Cycle Day Picker Modal */}
+      <StartCycleModal
+        visible={isStartCycleModalOpen}
+        schedule={schedule}
+        initialDayIndex={activeDayIndex}
+        onClose={() => setIsStartCycleModalOpen(false)}
+        onStart={(chosenDayIndex) => {
+          setIsStartCycleModalOpen(false);
+          startProgramCycle(chosenDayIndex);
+          navigation.navigate('Today');
+        }}
       />
 
       {/* Edit Prescription Modal */}

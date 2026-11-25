@@ -6,6 +6,7 @@ import { Colors } from '../theme/colors';
 import IntakeScreen from '../screens/IntakeScreen';
 import LoadingScreen from '../screens/LoadingScreen';
 import RoutineScreen from '../screens/RoutineScreen';
+import TodayScreen from '../screens/TodayScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +42,11 @@ export default function AppNavigator() {
         name="Routine" 
         component={RoutineScreen} 
         options={{ title: 'Your Routine', headerBackTitle: 'Configure' }} 
+      />
+      <Stack.Screen 
+        name="Today" 
+        component={TodayScreen} 
+        options={{ headerShown: false }} 
       />
     </Stack.Navigator>
   );
